@@ -6,6 +6,7 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -77,17 +78,26 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('email'),
             ])
             ->filters([
-                //
-            ])
+            SelectFilter::make('role')
+                    ->label('Rôle')
+                    ->options([
+                        'technicien' => 'Technicien',
+                        'ingenieur' => 'Ingénieur',
+                        'chef' => 'Chef',
+                        'majeur' => 'Majeur',
+                        'responsable' => 'Responsable',
+                    ])
+                    ->attribute('role'),
+        ])
             ->actions([
-                Tables\Actions\EditAction::make(), // Bouton d'édition
-                Tables\Actions\DeleteAction::make(), // Bouton de suppression
-            ])
+            Tables\Actions\EditAction::make(),
+            Tables\Actions\DeleteAction::make(),
+        ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
+            Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ]),
+        ]);
     }
 
     public static function getRelations(): array
