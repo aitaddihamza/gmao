@@ -6,18 +6,19 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class CheckTechnicienRole
+class TechnicienAcces
 {
     /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->isTechnicien()) {
-            return $next($request);
+        if (!auth()->check() || auth()->user()->role !== 'technicien') {
+            return redirect()->route('dashboard')->with('error', 'You do not have access to that area.');
         }
-        return redirect('/login');
+
+        return $next($request);
     }
 }

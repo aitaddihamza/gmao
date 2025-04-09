@@ -2,7 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use App\Http\Middleware\AdminAccess;
+use App\Http\Middleware\TechnicienAcces;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -19,24 +19,23 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class AdminPanelProvider extends PanelProvider
+class TechnicienPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('admin')
-            ->path('admin')
-            // ->login()
+            ->id('technicien')
+            ->path('technicien')
             ->colors([
                 'primary' => Color::Green,
+                'gray' => Color::Blue,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Technicien/Resources'), for: 'App\\Filament\\Technicien\\Resources')
+            ->discoverPages(in: app_path('Filament/Technicien/Pages'), for: 'App\\Filament\\Technicien\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Technicien/Widgets'), for: 'App\\Filament\\Technicien\\Widgets')
             ->widgets([
                 // Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
@@ -51,11 +50,10 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                AdminAccess::class
+                TechnicienAcces::class
             ])
             ->authMiddleware([
                 Authenticate::class,
             ]);
-
     }
 }
