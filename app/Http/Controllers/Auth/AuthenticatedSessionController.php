@@ -35,10 +35,15 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('filament.admin.pages.dashboard');
         } elseif ($user->role === 'technicien') {
             return redirect()->route('filament.technicien.pages.dashboard');
-        } elseif ($user->role === 'engineer') {
+        } elseif ($user->role === 'ingenieur') {
             return redirect()->route('filament.engineer.pages.dashboard');
+        } elseif ($user->role === 'majeur') {
+            return redirect()->route('filament.majeur.pages.dashboard');
+        } elseif ($user->role === 'responsable') {
+            return redirect()->route('filament.responsable.pages.dashboard');
+        } elseif ($user->role === 'chef') {
+            return redirect()->route('filament.directeur.pages.dashboard');
         }
-
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

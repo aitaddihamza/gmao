@@ -2,7 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use App\Http\Middleware\ChefAccess;
+use App\Http\Middleware\MajeurAccess;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -18,24 +18,23 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Http\Middleware\ResponsableAccess;
 
-class ResponsablePanelProvider extends PanelProvider
+class MajeurPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->id('responsable')
-            ->path('responsable')
+            ->id('majeur')
+            ->path('majeur')
             ->colors([
-                'primary' => Color::Teal,
+                'primary' => Color::Blue,
             ])
-            ->discoverResources(in: app_path('Filament/Responsable/Resources'), for: 'App\\Filament\\Responsable\\Resources')
-            ->discoverPages(in: app_path('Filament/Responsable/Pages'), for: 'App\\Filament\\Responsable\\Pages')
+            ->discoverResources(in: app_path('Filament/Majeur/Resources'), for: 'App\\Filament\\Majeur\\Resources')
+            ->discoverPages(in: app_path('Filament/Majeur/Pages'), for: 'App\\Filament\\Majeur\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Responsable/Widgets'), for: 'App\\Filament\\Responsable\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Majeur/Widgets'), for: 'App\\Filament\\Majeur\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
@@ -50,7 +49,7 @@ class ResponsablePanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                ResponsableAccess::class
+                MajeurAccess::class
             ])
             ->authMiddleware([
                 Authenticate::class,
