@@ -7,29 +7,37 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Ticket;
 use App\Models\Bloc;
+use Illuminate\Notifications\Notifiable;
 
 class Equipement extends Model
 {
     use HasFactory;
+    use Notifiable;
 
     protected $fillable = [
-        'nom',
-        'reference',
-        'description',
+        'bloc_id',
+        'designation',
         'marque',
         'modele',
         'numero_serie',
         'date_acquisition',
         'date_mise_en_service',
         'etat',
-        'localisation',
-        'qr_code',
-        'criticite',
+        'fournisseur',
+        'contact_fournisseur',
+        'type_equipement',
+        'date_fin_garantie',
+        'sous_contrat',
+        'type_contrat',
+        'numero_contrat',
+        'criticite'
     ];
 
     protected $casts = [
-        'date_acquisition' => 'datetime',
-        'date_mise_en_service' => 'datetime',
+        'date_acquisition' => 'date',
+        'date_mise_en_service' => 'date',
+        'date_fin_garantie' => 'date',
+        'sous_contrat' => 'boolean'
     ];
 
     // Relations
@@ -54,4 +62,5 @@ class Equipement extends Model
     {
         return $this->belongsTo(Bloc::class, 'bloc_id');
     }
+
 }

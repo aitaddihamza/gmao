@@ -2,11 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use APp\Models\Equipement;
+use App\Models\Equipement;
+use Illuminate\Notifications\Notifiable;
 
 class Bloc extends Model
 {
+    use HasFactory;
+    use Notifiable;
+
+
     protected $fillable = [
         'nom_bloc',
         'description',

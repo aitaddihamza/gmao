@@ -27,9 +27,7 @@ class EngineerPanelProvider extends PanelProvider
             ->id('engineer')
             ->path('engineer')
             ->colors([
-                'primary' => Color::Rose,
-                'gray' => Color::Rose
-
+                'primary' => Color::Blue
             ])
             ->discoverResources(in: app_path('Filament/Engineer/Resources'), for: 'App\\Filament\\Engineer\\Resources')
             ->discoverPages(in: app_path('Filament/Engineer/Pages'), for: 'App\\Filament\\Engineer\\Pages')

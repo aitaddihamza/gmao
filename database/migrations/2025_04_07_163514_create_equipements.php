@@ -20,7 +20,6 @@ return new class () extends Migration {
             $table->date('date_acquisition');
             $table->date('date_mise_en_service');
             $table->string('etat');
-            $table->integer('duree_garantie');
             $table->string('fournisseur');
             $table->string('contact_fournisseur');
             $table->string('type_equipement');
@@ -28,7 +27,6 @@ return new class () extends Migration {
             $table->boolean('sous_contrat')->default(false);
             $table->string('type_contrat')->nullable();
             $table->string('numero_contrat')->nullable();
-            $table->string('qr_code')->nullable();
             $table->string('criticite');
             $table->timestamps();
         });
