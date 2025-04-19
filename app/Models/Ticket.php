@@ -22,7 +22,6 @@ class Ticket extends Model
         'gravite_panne',
         'frequence_occurrence',
         'detectabilite',
-        'date_creation',
         'date_attribution',
         'date_cloture',
     ];
