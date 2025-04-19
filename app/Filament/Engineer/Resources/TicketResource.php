@@ -76,6 +76,11 @@ class TicketResource extends Resource
                             ->multiple()
                             ->maxFiles(5)
                             ->directory('tickets')
+                            ->visibility('public') // Ajout important
+                            ->preserveFilenames() // Optionnel - conserve les noms originaux
+                            ->imagePreviewHeight('250') // Meilleur aperçu
+                            ->openable() // Permet d'ouvrir les fichiers
+                            ->downloadable() // Permet de les télécharger
                             ->columnSpanFull(),
                     ]),
 

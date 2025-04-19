@@ -56,4 +56,5 @@ class TechnicienPanelProvider extends PanelProvider
                 Authenticate::class,
             ]);
     }
+
 }
