@@ -16,8 +16,8 @@ return new class () extends Migration {
             $table->unsignedBigInteger('maintenance_corr_id')->nullable();
             $table->foreign('maintenance_prev_id')->references('id')->on('maintenances_preventives')->onDelete('cascade');
             $table->foreign('maintenance_corr_id')->references('id')->on('maintenances_correctives')->onDelete('cascade');
-            $table->foreignId('piece_id')->constrained();
-            $table->integer('quantite_utilisee');
+            $table->foreignId('piece_id')->constrained()->onDelete('cascade');
+            $table->integer('quantite_utilisee')->default(0);
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('interventioin_pieces');
+        Schema::dropIfExists('interventions_pieces');
     }
 };

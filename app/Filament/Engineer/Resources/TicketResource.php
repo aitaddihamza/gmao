@@ -143,6 +143,11 @@ class TicketResource extends Resource
                         default => 'gray',
                     })
                     ->sortable(),
+                // type de ticket
+                Tables\Columns\TextColumn::make('type_ticket')
+                    ->label('Type de ticket')
+                    ->sortable()
+                    ->searchable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('statut')

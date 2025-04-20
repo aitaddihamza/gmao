@@ -5,14 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
-use App\Models\MaintenancePreventive;
-use App\Models\MaintenanceCorrective;
 
 class Piece extends Model
 {
     use HasFactory;
     use Notifiable;
-
 
     protected $fillable = [
         'designation',
@@ -27,19 +24,18 @@ class Piece extends Model
         'updated_at' => 'datetime',
     ];
 
-
     public function maintenancePreventives()
     {
-        return $this->belongsToMany(MaintenancePreventive::class, 'interventions_pieces')
+        return $this->belongsToMany(MaintenancePreventive::class, 'interventions_pieces', 'piece_id', 'maintenance_prev_id')
+            ->using(MaintenancePreventivePiece::class)
             ->withPivot('quantite_utilisee')
             ->withTimestamps();
     }
 
     public function maintenanceCorrectives()
     {
-        return $this->belongsToMany(MaintenanceCorrective::class, 'interventions_pieces')
+        return $this->belongsToMany(MaintenanceCorrective::class, 'interventions_pieces', 'piece_id', 'maintenance_corr_id')
             ->withPivot('quantite_utilisee')
             ->withTimestamps();
     }
-
 }

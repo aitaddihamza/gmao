@@ -26,6 +26,7 @@ class EngineerPanelProvider extends PanelProvider
         return $panel
             ->id('engineer')
             ->path('engineer')
+            ->brandName('GMAO')
             ->colors([
                 'primary' => Color::Blue
             ])

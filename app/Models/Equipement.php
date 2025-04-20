@@ -63,4 +63,10 @@ class Equipement extends Model
         return $this->belongsTo(Bloc::class, 'bloc_id');
     }
 
+    public function maintenancePreventives()
+    {
+        return $this->hasMany(MaintenancePreventive::class, 'equipement_id');
+    }
+
+
 }
