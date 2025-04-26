@@ -30,6 +30,8 @@ class EngineerPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Blue
             ])
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('1s')
             ->discoverResources(in: app_path('Filament/Engineer/Resources'), for: 'App\\Filament\\Engineer\\Resources')
             ->discoverPages(in: app_path('Filament/Engineer/Pages'), for: 'App\\Filament\\Engineer\\Pages')
             ->pages([

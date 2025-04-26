@@ -27,11 +27,10 @@ class TechnicienPanelProvider extends PanelProvider
             ->id('technicien')
             ->path('technicien')
             ->colors([
-                'primary' => Color::Green,
-                'gray' => Color::Blue,
+                'primary' => Color::Yellow,
             ])
             ->databaseNotifications()
-            ->databaseNotificationsPolling('30s')
+            ->databaseNotificationsPolling('1s')
             ->discoverResources(in: app_path('Filament/Technicien/Resources'), for: 'App\\Filament\\Technicien\\Resources')
             ->discoverPages(in: app_path('Filament/Technicien/Pages'), for: 'App\\Filament\\Technicien\\Pages')
             ->pages([

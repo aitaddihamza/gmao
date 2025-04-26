@@ -3,11 +3,11 @@
 namespace App\Notifications;
 
 use App\Models\Ticket;
-use Filament\Notifications\Actions\Action;
-use Filament\Notifications\Database\DatabaseNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\DatabaseMessage;
+use Filament\Notifications\Notification as FilamentNotification;
 
 class TicketAssigned extends Notification implements ShouldQueue
 {
@@ -20,31 +20,26 @@ class TicketAssigned extends Notification implements ShouldQueue
         $this->ticket = $ticket;
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['database', 'broadcast'];
     }
 
-    public function toDatabase($notifiable)
+    public function toDatabase($notifiable): array
     {
-        $prioriteColors = [
-            'critique' => 'danger',
-            'haute' => 'warning',
-            'moyenne' => 'info',
-            'basse' => 'gray',
+        return [
+            'title' => 'Ticket Assigned',
+            'message' => "You have been assigned to ticket ID: {$this->ticket->id} for equipment {$this->ticket->equipement->designation}.",
+            'ticket_id' => $this->ticket->id,
+            'url' => route('filament.technicien.resources.tickets.edit', $this->ticket->id),
         ];
+    }
 
-        return DatabaseNotification::make()
-            ->title('Nouveau ticket assigné')
-            ->icon('heroicon-o-clipboard-document-list')
-            ->iconColor($prioriteColors[$this->ticket->priorite] ?? 'primary')
-            ->body("Un ticket pour l'équipement {$this->ticket->equipement->designation} vous a été assigné.")
-            ->actions([
-                Action::make('voir')
-                    ->button()
-                    ->url(route('filament.technicien.resources.tickets.edit', $this->ticket->id))
-                    ->markAsRead(),
-            ])
-            ->getDatabaseMessage();
+    public function toFilamentNotification($notifiable): FilamentNotification
+    {
+        return FilamentNotification::make()
+            ->title('Ticket Assigned')
+            ->body("You have been assigned to ticket ID: {$this->ticket->id} for equipment {$this->ticket->equipement->designation}.")
+            ->success();
     }
 }

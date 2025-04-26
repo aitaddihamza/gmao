@@ -1,22 +1,22 @@
 <?php
 
-namespace App\Filament\Engineer\Resources\TicketResource\Pages;
+namespace App\Filament\Technicien\Resources\TicketResource\Pages;
 
-use App\Filament\Engineer\Resources\TicketResource;
+use App\Filament\Technicien\Resources\TicketResource;
 use App\Models\User;
 use Filament\Notifications\Notification;
 use Filament\Notifications\Actions\Action;
-use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\CreateRecord;
 
-class EditTicket extends EditRecord
+class CreateTicket extends CreateRecord
 {
     protected static string $resource = TicketResource::class;
 
-    protected function afterSave(): void
+    protected function afterCreate(): void
     {
         $ticket = $this->getRecord();
 
-        // Notify the assigned user
+        // Notify the assigned user if a user was assigned
         if ($ticket->user_assignee_id) {
             $assignee = User::find($ticket->user_assignee_id);
 
