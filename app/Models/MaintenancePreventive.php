@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
+use App\Models\MaintenancePreventivePiece;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MaintenancePreventive extends Model
 {
@@ -31,20 +34,22 @@ class MaintenancePreventive extends Model
         'date_reelle' => 'date',
     ];
 
-    public function pieces()
+    public function pieces(): BelongsToMany
     {
         return $this->belongsToMany(Piece::class, 'interventions_pieces', 'maintenance_prev_id', 'piece_id')
-            ->using(MaintenancePreventivePiece::class)
-            ->withPivot('quantite_utilisee')
-            ->withTimestamps();
+                    ->withPivot('quantite_utilisee')
+                    ->using(MaintenancePreventivePiece::class)
+                    ->withTimestamps();
     }
 
-    public function equipement()
+
+
+    public function equipement(): BelongsTo
     {
         return $this->belongsTo(Equipement::class, 'equipement_id');
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }

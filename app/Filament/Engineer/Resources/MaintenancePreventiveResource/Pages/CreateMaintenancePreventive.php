@@ -3,6 +3,7 @@
 namespace App\Filament\Engineer\Resources\MaintenancePreventiveResource\Pages;
 
 use App\Filament\Engineer\Resources\MaintenancePreventiveResource;
+use App\Models\Piece;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -10,15 +11,12 @@ class CreateMaintenancePreventive extends CreateRecord
 {
     protected static string $resource = MaintenancePreventiveResource::class;
 
-    // This property is crucial for handling relationship data properly
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Remove the pieces_utilisees from the data to avoid errors with the create method
         if (isset($data['pieces_utilisees'])) {
             $this->pieces = $data['pieces_utilisees'];
             unset($data['pieces_utilisees']);
         }
-
         return $data;
     }
 
@@ -26,17 +24,26 @@ class CreateMaintenancePreventive extends CreateRecord
     {
         $record = $this->getRecord();
 
-        // Check if we have pieces to sync
+        // Vérifier si nous avons des pièces à synchroniser
         if (isset($this->pieces)) {
-            // Prepare the pieces data for syncing
+            // Préparer les données des pièces pour la synchronisation
             $pieceData = [];
             foreach ($this->pieces as $piece) {
                 if (!empty($piece['piece_id']) && isset($piece['quantite_utilisee'])) {
-                    $pieceData[$piece['piece_id']] = ['quantite_utilisee' => $piece['quantite_utilisee']];
+                    $pieceId = $piece['piece_id'];
+                    $quantite = $piece['quantite_utilisee'];
+                    $pieceData[$pieceId] = ['quantite_utilisee' => $quantite];
+
+                    // Mettre à jour le stock de la pièce
+                    $pieceObj = Piece::find($pieceId);
+                    if ($pieceObj) {
+                        $pieceObj->quantite_stock -= $quantite;
+                        $pieceObj->save();
+                    }
                 }
             }
 
-            // Sync the pieces with the maintenance record
+            // Synchroniser les pièces avec l'enregistrement de maintenance
             $record->pieces()->sync($pieceData);
         }
     }

@@ -3,36 +3,31 @@
 namespace App\Filament\Engineer\Resources;
 
 use App\Filament\Engineer\Resources\MaintenancePreventiveResource\Pages;
-use App\Filament\Engineer\Resources\MaintenancePreventiveResource\RelationManagers;
 use App\Models\MaintenancePreventive;
+use App\Models\Piece;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class MaintenancePreventiveResource extends Resource
 {
     protected static ?string $model = MaintenancePreventive::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-calendar-days'; // 📅 Pour la planification
-
+    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                // une selection pour choisir l'équipement par nom
                 Forms\Components\Select::make('equipement_id')
                     ->relationship('equipement', 'designation')
                     ->required()
                     ->searchable()
                     ->preload()
-                    ->label('Équipement concerné')
-                    ->default(fn ($record) => $record?->equipement_id), // Afficher la valeur existante
-                // une selection pour choisir l'utilisateur par nom qui doit avoir un role de technicien
+                    ->label('Équipement concerné'),
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'name')
                     ->required()
@@ -41,20 +36,14 @@ class MaintenancePreventiveResource extends Resource
                     ->label('Technicien responsable')
                     ->options(function () {
                         return \App\Models\User::where('role', 'technicien')
-                            ->pluck('name', 'id'); // Filter users by role 'technicien'
-                    })
-                    ->default(fn ($record) => $record?->user_id), // Afficher la valeur existante
-
-                // la date planifié doit être après la date actuel
+                            ->pluck('name', 'id');
+                    }),
                 Forms\Components\DatePicker::make('date_planifiee')
                     ->required()
                     ->minDate(now())
-                    ->label('Date planifiée')
-                    ->default(fn ($record) => $record?->date_planifiee), // Afficher la valeur existante
+                    ->label('Date planifiée'),
                 Forms\Components\DatePicker::make('date_reelle')
-                    ->minDate(now())
-                    ->default(fn ($record) => $record?->date_reelle), // Afficher la valeur existante
-                // en cas d'edit afficher l'ancinne valeur
+                    ->minDate(now()),
                 Forms\Components\Select::make('statut')
                     ->required()
                     ->options([
@@ -64,21 +53,15 @@ class MaintenancePreventiveResource extends Resource
                         'terminee' => 'Terminée',
                         'reportee' => 'Reportée',
                         'annulee' => 'Annulée',
-                    ])
-                    ->default(fn ($record) => $record?->statut), // Afficher la valeur existante
+                    ]),
                 Forms\Components\Textarea::make('description')
                     ->required()
-                    ->columnSpanFull()
-                    ->default(fn ($record) => $record?->description), // Afficher la valeur existante
+                    ->columnSpanFull(),
                 Forms\Components\TextInput::make('periodicite_jours')
                     ->required()
-                    ->numeric()
-                    ->default(fn ($record) => $record?->periodicite_jours), // Afficher la valeur existante
+                    ->numeric(),
                 Forms\Components\Textarea::make('remarques')
-                    ->columnSpanFull()
-                    ->default(fn ($record) => $record?->remarques), // Afficher la valeur existante
-                // s'il a utilisé des pièces, il faut les ajouter et chacune son quantité
-                // dans le cas d'edit afficher les pièces déjà utilisées
+                    ->columnSpanFull(),
                 Forms\Components\Repeater::make('pieces_utilisees')
                     ->schema([
                         Forms\Components\Select::make('piece_id')
@@ -86,15 +69,57 @@ class MaintenancePreventiveResource extends Resource
                             ->label('Pièce')
                             ->required()
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->reactive()
+                            ->afterStateUpdated(
+                                fn ($state, callable $set) =>
+                                $set('stock_disponible', \App\Models\Piece::find($state)?->quantite_stock ?? 0)
+                            ),
                         Forms\Components\TextInput::make('quantite_utilisee')
                             ->required()
-                            ->numeric(),
+                            ->numeric()
+                            ->label('Quantité utilisée')
+                            ->minValue(1)
+                            ->reactive()
+                            ->rules([
+                                function (Forms\Get $get) {
+                                    return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                        $pieceId = $get('piece_id');
+                                        if (!$pieceId) {
+                                            return;
+                                        }
+
+                                        $piece = \App\Models\Piece::find($pieceId);
+                                        if (!$piece) {
+                                            return;
+                                        }
+
+                                        $record = $get('../../record');
+                                        $quantiteDejaUtilisee = 0;
+
+                                        if ($record) {
+                                            $piecePivot = $record->pieces->where('id', $pieceId)->first()?->pivot;
+                                            if ($piecePivot) {
+                                                $quantiteDejaUtilisee = $piecePivot->quantite_utilisee;
+                                            }
+                                        }
+
+                                        $stockDisponible = $piece->quantite_stock + $quantiteDejaUtilisee;
+
+                                        if ($value > $stockDisponible) {
+                                            $fail("La quantité demandée ({$value}) dépasse le stock disponible ({$stockDisponible}).");
+                                        }
+                                    };
+                                }
+                            ]),
+                        Forms\Components\TextInput::make('stock_disponible')
+                            ->label('Stock disponible')
+                            ->disabled()
+                            ->dehydrated(false),
                     ])
-                    ->columns(2)
+                    ->columns(3)
                     ->createItemButtonLabel('Ajouter une pièce')
-                    // Fix the default function to properly handle null records
-                    ->default(function ($get, $record) {
+                    ->default(function ($record) {
                         if (!$record) {
                             return [];
                         }
@@ -103,77 +128,98 @@ class MaintenancePreventiveResource extends Resource
                             return [
                                 'piece_id' => $piece->id,
                                 'quantite_utilisee' => $piece->pivot->quantite_utilisee,
+                                'stock_disponible' => $piece->quantite_stock + $piece->pivot->quantite_utilisee,
                             ];
                         })->toArray();
                     })
+                    ->itemLabel(function (array $state): ?string {
+                        if (!isset($state['piece_id'])) {
+                            return null;
+                        }
+
+                        $piece = \App\Models\Piece::find($state['piece_id']);
+                        return ($piece ? $piece->designation : 'Pièce inconnue') .
+                            ' - Qté: ' . ($state['quantite_utilisee'] ?? '0');
+                    })
+                    ->disableLabel(false)
+                    ->afterStateHydrated(function ($state, $record) use (&$originalPiecesState) {
+                        if (!$record) {
+                            return;
+                        }
+
+                        // Store the original state for comparison during save
+                        $originalPiecesState = collect($record->pieces->map(function ($piece) {
+                            return [
+                                'piece_id' => $piece->id,
+                                'quantite_utilisee' => $piece->pivot->quantite_utilisee,
+                            ];
+                        })->toArray());
+                    }),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-               ->columns([
-                   // Change this line to show equipment name instead of ID
-                   Tables\Columns\TextColumn::make('equipement.designation')
-                       ->label('Équipement')
-                       ->sortable()
-                       ->searchable(),
-                   // Change this to show user name instead of ID
-                   Tables\Columns\TextColumn::make('user.name')
-                       ->label('Technicien')
-                       ->sortable()
-                       ->searchable(),
-                   Tables\Columns\TextColumn::make('date_planifiee')
-                       ->date()
-                       ->sortable(),
-                   Tables\Columns\TextColumn::make('date_reelle')
-                       ->date()
-                       ->sortable()
-                       ->placeholder('Non définie'),
-                   Tables\Columns\TextColumn::make('statut')
-                       ->searchable()
-                       ->badge()
-                       ->color(fn (string $state): string => match ($state) {
-                           'planifiee' => 'info',
-                           'en_attente' => 'warning',
-                           'en_cours' => 'primary',
-                           'terminee' => 'success',
-                           'reportee' => 'gray',
-                           'annulee' => 'danger',
-                       }),
-                   Tables\Columns\TextColumn::make('periodicite_jours')
-                       ->numeric()
-                       ->sortable(),
-                   Tables\Columns\TextColumn::make('created_at')
-                       ->dateTime()
-                       ->sortable()
-                       ->toggleable(isToggledHiddenByDefault: true),
-                   Tables\Columns\TextColumn::make('updated_at')
-                       ->dateTime()
-                       ->sortable()
-                       ->toggleable(isToggledHiddenByDefault: true),
-                   // Optimize pieces display
-                   Tables\Columns\TextColumn::make('pieces_count')
-                       ->label('Pièces utilisées')
-                       ->getStateUsing(function ($record) {
-                           $piecesInfo = [];
-                           foreach ($record->pieces as $piece) {
-                               $piecesInfo[] = $piece->pivot->quantite_utilisee . ' x ' . $piece->designation;
-                           }
-                           return !empty($piecesInfo) ? implode(', ', $piecesInfo) : 'Aucune pièce';
-                       }),
-               ])
-                   ->filters([
-                       //
+            ->columns([
+                Tables\Columns\TextColumn::make('equipement.designation')
+                    ->label('Équipement')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Technicien')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('date_planifiee')
+                    ->date()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('date_reelle')
+                    ->date()
+                    ->sortable()
+                    ->placeholder('Non définie'),
+                Tables\Columns\TextColumn::make('statut')
+                    ->searchable()
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'planifiee' => 'info',
+                        'en_attente' => 'warning',
+                        'en_cours' => 'primary',
+                        'terminee' => 'success',
+                        'reportee' => 'gray',
+                        'annulee' => 'danger',
+                    }),
+                Tables\Columns\TextColumn::make('periodicite_jours')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('pieces_count')
+                    ->label('Pièces utilisées')
+                    ->getStateUsing(function ($record) {
+                        $piecesInfo = [];
+                        foreach ($record->pieces as $piece) {
+                            $piecesInfo[] = $piece->pivot->quantite_utilisee . ' x ' . $piece->designation;
+                        }
+                        return !empty($piecesInfo) ? implode(', ', $piecesInfo) : 'Aucune pièce';
+                    }),
             ])
-                   ->actions([
-                       Tables\Actions\EditAction::make(),
-                       Tables\Actions\DeleteAction::make(),
+            ->filters([
+                //
             ])
-                   ->bulkActions([
-                       Tables\Actions\BulkActionGroup::make([
-                           Tables\Actions\DeleteBulkAction::make(),
-                       ]),
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
             ]);
     }
 

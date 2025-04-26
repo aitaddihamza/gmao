@@ -30,6 +30,8 @@ class TechnicienPanelProvider extends PanelProvider
                 'primary' => Color::Green,
                 'gray' => Color::Blue,
             ])
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             ->discoverResources(in: app_path('Filament/Technicien/Resources'), for: 'App\\Filament\\Technicien\\Resources')
             ->discoverPages(in: app_path('Filament/Technicien/Pages'), for: 'App\\Filament\\Technicien\\Pages')
             ->pages([

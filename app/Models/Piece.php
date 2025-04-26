@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
+use App\Models\MaintenancePreventivePiece;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Piece extends Model
 {
@@ -24,7 +26,7 @@ class Piece extends Model
         'updated_at' => 'datetime',
     ];
 
-    public function maintenancePreventives()
+    public function maintenancePreventives(): BelongsToMany
     {
         return $this->belongsToMany(MaintenancePreventive::class, 'interventions_pieces', 'piece_id', 'maintenance_prev_id')
             ->using(MaintenancePreventivePiece::class)
@@ -32,7 +34,7 @@ class Piece extends Model
             ->withTimestamps();
     }
 
-    public function maintenanceCorrectives()
+    public function maintenanceCorrectives(): BelongsToMany
     {
         return $this->belongsToMany(MaintenanceCorrective::class, 'interventions_pieces', 'piece_id', 'maintenance_corr_id')
             ->withPivot('quantite_utilisee')

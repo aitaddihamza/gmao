@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Ticket;
 use App\Models\Bloc;
 use Illuminate\Notifications\Notifiable;
@@ -58,12 +59,12 @@ class Equipement extends Model
             ->where('type_ticket', 'maintenance')
             ->exists();
     }
-    public function bloc()
+    public function bloc(): BelongsTo
     {
         return $this->belongsTo(Bloc::class, 'bloc_id');
     }
 
-    public function maintenancePreventives()
+    public function maintenancePreventives(): HasMany
     {
         return $this->hasMany(MaintenancePreventive::class, 'equipement_id');
     }
