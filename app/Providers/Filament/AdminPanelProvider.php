@@ -25,7 +25,8 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->id('admin')
+            ->id('admin') 
+            ->brandName('GMAO')
             ->path('admin')
             // ->login()
             ->colors([

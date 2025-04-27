@@ -26,16 +26,19 @@ class TechnicienPanelProvider extends PanelProvider
         return $panel
             ->id('technicien')
             ->path('technicien')
+            ->brandName('GMAO')
             ->colors([
                 'primary' => Color::Yellow,
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('1s')
             ->discoverResources(in: app_path('Filament/Technicien/Resources'), for: 'App\\Filament\\Technicien\\Resources')
+            ->discoverResources(in: app_path('Filament/SharedResources'), for: 'App\\Filament\\SharedResources')
             ->discoverPages(in: app_path('Filament/Technicien/Pages'), for: 'App\\Filament\\Technicien\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
+            // add the shared resource ticketresource
             ->discoverWidgets(in: app_path('Filament/Technicien/Widgets'), for: 'App\\Filament\\Technicien\\Widgets')
             ->widgets([
                 // Widgets\AccountWidget::class,

@@ -17,6 +17,11 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
     protected static ?string $navigationIcon = 'heroicon-o-users';
+    // change the title to "Utilisateurs"
+    public static function getPluralModelLabel(): string
+    {
+        return 'Utilisateurs';
+    }
 
     public static function form(Form $form): Form
     {

@@ -27,13 +27,14 @@ class ResponsablePanelProvider extends PanelProvider
         return $panel
             ->id('responsable')
             ->path('responsable')
+            ->brandName('GMAO')
             ->colors([
                 'primary' => Color::Teal,
             ])
             ->discoverResources(in: app_path('Filament/Responsable/Resources'), for: 'App\\Filament\\Responsable\\Resources')
             ->discoverPages(in: app_path('Filament/Responsable/Pages'), for: 'App\\Filament\\Responsable\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                // Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Responsable/Widgets'), for: 'App\\Filament\\Responsable\\Widgets')
             ->widgets([

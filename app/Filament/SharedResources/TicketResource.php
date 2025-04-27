@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Technicien\Resources;
+namespace App\Filament\SharedResources;
 
-use App\Filament\Technicien\Resources\TicketResource\Pages;
+use App\Filament\SharedResources\TicketResource\Pages;
 use App\Models\Ticket;
 use App\Models\User;
 use Filament\Forms;
@@ -14,40 +14,39 @@ use Filament\Tables\Table;
 class TicketResource extends Resource
 {
     protected static ?string $model = Ticket::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Basic Information')
+                Forms\Components\Section::make('Informations de base')
                     ->schema([
                         Forms\Components\Select::make('equipement_id')
                             ->relationship('equipement', 'designation')
                             ->required()
                             ->searchable()
                             ->preload()
-                            ->label('Equipment'),
+                            ->label('Équipement concerné'),
 
                         Forms\Components\Select::make('type_ticket')
                             ->options([
-                                'correctif' => 'Corrective Maintenance',
-                                'preventif' => 'Preventive Maintenance',
+                                'correctif' => 'Maintenance corrective',
+                                'preventif' => 'Maintenance préventive',
                                 'installation' => 'Installation',
-                                'formation' => 'Training',
-                                'autre' => 'Other',
+                                'formation' => 'Formation',
+                                'autre' => 'Autre',
                             ])
                             ->required()
                             ->default('correctif'),
 
                         Forms\Components\Select::make('statut')
                             ->options([
-                                'nouveau' => 'New',
-                                'attribue' => 'Assigned',
-                                'en_cours' => 'In Progress',
-                                'en_attente' => 'Pending',
-                                'cloture' => 'Closed',
+                                'nouveau' => 'Nouveau',
+                                'attribue' => 'Attribué',
+                                'en_cours' => 'En cours',
+                                'en_attente' => 'En attente',
+                                'cloture' => 'Clôturé',
                             ])
                             ->required()
                             ->default('nouveau')
@@ -55,16 +54,16 @@ class TicketResource extends Resource
 
                         Forms\Components\Select::make('priorite')
                             ->options([
-                                'critique' => 'Critical - Urgent',
-                                'haute' => 'High',
-                                'moyenne' => 'Medium',
-                                'basse' => 'Low',
+                                'critique' => 'Critique - Urgent',
+                                'haute' => 'Haute',
+                                'moyenne' => 'Moyenne',
+                                'basse' => 'Basse',
                             ])
                             ->required()
                             ->default('moyenne'),
                     ]),
 
-                Forms\Components\Section::make('Problem Details')
+                Forms\Components\Section::make('Détails du problème')
                     ->schema([
                         Forms\Components\Textarea::make('description')
                             ->required()
@@ -78,14 +77,14 @@ class TicketResource extends Resource
                             ->columnSpanFull(),
                     ]),
 
-                Forms\Components\Section::make('Assignment')
+                Forms\Components\Section::make('Assignation')
                     ->schema([
-                        Forms\Components\Hidden::make('user_createur_id')
-                            ->default(fn () => auth()->id())
-                            ->required(),
+                    Forms\Components\Hidden::make('user_createur_id')
+                       ->default(fn () => auth()->id())
+                       ->required(),
 
                         Forms\Components\Select::make('user_assignee_id')
-                            ->label('Assigned Technician')
+                            ->label('Technicien assigné')
                             ->options(
                                 User::whereNotIn('role', ['admin', 'responsable'])
                                     ->get()
@@ -117,11 +116,11 @@ class TicketResource extends Resource
                 Tables\Columns\TextColumn::make('equipement.designation')
                     ->sortable()
                     ->searchable()
-                    ->label('Equipment')
-                    ->url(fn ($record) => route('filament.technicien.resources.tickets.show', $record->id)),
+                    ->label('Équipement concerné')
+                    ->url(fn ($record) => route('filament.engineer.resources.tickets.show', $record->id)),
 
                 Tables\Columns\TextColumn::make('assignee.name')
-                    ->label('Assigned To')
+                    ->label('Assigné à')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('statut')
@@ -144,19 +143,19 @@ class TicketResource extends Resource
                         default => 'gray',
                     })
                     ->sortable(),
-
+                // type de ticket
                 Tables\Columns\TextColumn::make('type_ticket')
-                    ->label('Ticket Type')
+                    ->label('Type de ticket')
                     ->sortable()
                     ->searchable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('statut')
                     ->options([
-                        'nouveau' => 'New',
-                        'attribue' => 'Assigned',
-                        'en_cours' => 'In Progress',
-                        'cloture' => 'Closed',
+                        'nouveau' => 'Nouveau',
+                        'attribue' => 'Attribué',
+                        'en_cours' => 'En cours',
+                        'cloture' => 'Clôturé',
                     ]),
             ])
             ->actions([
