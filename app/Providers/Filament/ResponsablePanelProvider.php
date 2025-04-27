@@ -33,10 +33,10 @@ class ResponsablePanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/Responsable/Resources'), for: 'App\\Filament\\Responsable\\Resources')
             ->discoverPages(in: app_path('Filament/Responsable/Pages'), for: 'App\\Filament\\Responsable\\Pages')
+            ->discoverResources(in: app_path('Filament/SharedResources/Equipement'), for: 'App\\Filament\\SharedResources\\Equipement')
             ->pages([
                 // Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Responsable/Widgets'), for: 'App\\Filament\\Responsable\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,

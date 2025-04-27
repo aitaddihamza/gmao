@@ -22,7 +22,6 @@ return new class () extends Migration {
             $table->string('etat');
             $table->string('fournisseur');
             $table->string('contact_fournisseur');
-            $table->string('type_equipement');
             $table->date('date_fin_garantie');
             $table->boolean('sous_contrat')->default(false);
             $table->string('type_contrat')->nullable();

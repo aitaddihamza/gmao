@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\TypeBloc;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,12 +17,12 @@ class BlocFactory extends Factory
      */
     public function definition(): array
     {
-        // définir les valeurs par défaut pour les attributs de la table blocs
         return [
-            'nom_bloc' => $this->faker->word(),
+            'nom_bloc' => $this->faker->unique()->word(),
             'description' => $this->faker->sentence(),
-            'type_bloc' => $this->faker->word(),
-            'localisation' => $this->faker->address(),
+            'type_bloc_id' => TypeBloc::factory(),
+            'localisation' => $this->faker->randomElement(['Nord', 'Sud', 'Est', 'Ouest']) . ' - ' .
+                $this->faker->numberBetween(1, 5) . 'ème étage',
         ];
     }
 }

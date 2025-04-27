@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\SharedResources\TicketResource\Pages;
+namespace App\Filament\SharedResources\Ticket\TicketResource\Pages;
 
-use App\Filament\SharedResources\TicketResource;
+use App\Filament\SharedResources\Ticket\TicketResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables;

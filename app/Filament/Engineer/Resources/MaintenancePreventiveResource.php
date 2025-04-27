@@ -17,6 +17,11 @@ class MaintenancePreventiveResource extends Resource
     protected static ?string $model = MaintenancePreventive::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+    // sous groupe de maintenance
+    protected static ?string $navigationGroup = 'Maintenance';
+    protected static ?int $navigationSort = 1;
+    protected static ?string $navigationLabel = 'Maintenance préventive';
+    protected static ?string $slug = 'maintenance-preventive';
 
     public static function form(Form $form): Form
     {

@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Filament\SharedResources\TicketResource\Pages;
+namespace App\Filament\SharedResources\Ticket\TicketResource\Pages;
 
-use App\Filament\SharedResources\TicketResource;
+use App\Filament\SharedResources\Ticket\TicketResource;
 use App\Models\User;
 use Filament\Notifications\Notification;
 use Filament\Notifications\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Actions;
 
 class EditTicket extends EditRecord
 {
@@ -27,11 +28,18 @@ class EditTicket extends EditRecord
                     ->success()
                     ->actions([
                         Action::make('View Ticket')
-                            ->url(route('filament.'.$assignee->role.'.resources.tickets.show', $ticket->id))
+                            ->url($assignee->role . '/tickets/' . $ticket->id)
                             ->icon('heroicon-o-eye'),
                     ])
                     ->sendToDatabase($assignee);
             }
         }
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\DeleteAction::make(),
+        ];
     }
 }

@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Filament\Responsable\Resources;
+namespace App\Filament\SharedResources\Equipement;
 
-use App\Filament\Responsable\Resources\EquipementResource\Pages;
+use App\Filament\SharedResources\Equipement\EquipementResource\Pages;
 use App\Models\Equipement;
-use App\Models\Bloc; // Ajout pour la relation
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,15 +14,15 @@ class EquipementResource extends Resource
 {
     protected static ?string $model = Equipement::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cube'; // Icône modifiée ici
+    protected static ?string $navigationIcon = 'heroicon-o-cube';
     protected static ?string $navigationGroup = 'Gestion des équipements';
+    protected static ?int $navigationSort = 1;
     protected static ?string $navigationLabel = 'Équipements';
     protected static ?string $slug = 'equipements';
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            // récupére tous les blocs et permet au l'utilisatuer de rechercher par son nom il faut mettre a jour bloc_id dans la table equipements
             Forms\Components\Select::make('bloc_id')
                 ->relationship('bloc', 'nom_bloc')
                 ->required()
@@ -31,6 +30,12 @@ class EquipementResource extends Resource
                 ->preload()
                 ->label('Bloc'),
 
+            Forms\Components\Select::make('type_equipement_id')
+                ->relationship('typeEquipement', 'nom')
+                ->required()
+                ->searchable()
+                ->preload()
+                ->label('Type d\'équipement'),
 
             Forms\Components\TextInput::make('designation')
                 ->required()
@@ -71,27 +76,29 @@ class EquipementResource extends Resource
                 ->required()
                 ->maxLength(255),
 
-            Forms\Components\Select::make('type_equipement')
+            Forms\Components\Select::make('criticite')
                 ->options([
-                    'medical' => 'Médical',
-                    'informatique' => 'Informatique',
-                    'technique' => 'Technique',
-                    'autre' => 'Autre',
+                    'haute' => 'Haute',
+                    'moyenne' => 'Moyenne',
+                    'basse' => 'Basse',
                 ])
                 ->required(),
 
-            // la date fin du garantie doit être supérieur à la date d'acquisition par au moios un mois
-            // min date doit etres un mois après la date d'acquisition
             Forms\Components\DatePicker::make('date_fin_garantie')
                 ->required()
                 ->after('date_acquisition')
                 ->minDate(function (Forms\Get $get) {
                     $dateAcquisition = $get('date_acquisition');
                     if (!$dateAcquisition) {
-                        return null; // Retourne null si aucune date d'acquisition n'est définie
+                        return null;
                     }
                     return \Carbon\Carbon::parse($dateAcquisition)->addMonth();
-                }),
+                })
+                ->validationAttribute('date de fin de garantie')
+                ->validationMessages([
+                    'after' => 'La date de fin de garantie doit être postérieure à la date d\'acquisition',
+                    'required' => 'La date de fin de garantie est requise',
+                ]),
 
             Forms\Components\Toggle::make('sous_contrat')
                 ->required()
@@ -104,15 +111,6 @@ class EquipementResource extends Resource
             Forms\Components\TextInput::make('numero_contrat')
                 ->maxLength(255)
                 ->hidden(fn (Forms\Get $get) => !$get('sous_contrat')),
-
-
-            Forms\Components\Select::make('criticite')
-                ->options([
-                    'haute' => 'Haute',
-                    'moyenne' => 'Moyenne',
-                    'basse' => 'Basse',
-                ])
-                ->required(),
         ]);
     }
 
@@ -120,7 +118,7 @@ class EquipementResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('bloc.nom') // Relation vers le Bloc
+                Tables\Columns\TextColumn::make('bloc.nom_bloc')
                     ->sortable()
                     ->searchable(),
 
@@ -164,8 +162,10 @@ class EquipementResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('type_equipement')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('typeEquipement.nom')
+                    ->sortable()
+                    ->searchable()
+                    ->label('Type d\'équipement'),
 
                 Tables\Columns\TextColumn::make('date_fin_garantie')
                     ->date()
@@ -192,13 +192,9 @@ class EquipementResource extends Resource
                         'mauvais' => 'Mauvais',
                         'hors_service' => 'Hors service',
                     ]),
-                Tables\Filters\SelectFilter::make('type_equipement')
-                    ->options([
-                        'medical' => 'Médical',
-                        'informatique' => 'Informatique',
-                        'technique' => 'Technique',
-                        'autre' => 'Autre',
-                    ]),
+                Tables\Filters\SelectFilter::make('type_equipement_id')
+                    ->relationship('typeEquipement', 'nom')
+                    ->label('Type d\'équipement'),
                 Tables\Filters\Filter::make('garantie_active')
                     ->query(fn ($query) => $query->where('date_fin_garantie', '>=', now())),
                 Tables\Filters\SelectFilter::make('criticite')
@@ -230,8 +226,7 @@ class EquipementResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // Ici, vous pouvez ajouter vos RelationManagers
-            // Ex: RelationManagers\MaintenancesRelationManager::class,
+            //
         ];
     }
 

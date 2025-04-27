@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Filament\Responsable\Resources\EquipementResource\Pages;
+namespace App\Filament\SharedResources\Equipement\EquipementResource\Pages;
 
-use App\Filament\Responsable\Resources\EquipementResource;
-use Filament\Resources\Pages\ViewRecord;
+use App\Filament\SharedResources\Equipement\EquipementResource;
 use Filament\Actions;
+use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
 
@@ -83,4 +83,5 @@ class ViewEquipement extends ViewRecord
                     ])->columns(2),
             ]);
     }
-} 
+}
+

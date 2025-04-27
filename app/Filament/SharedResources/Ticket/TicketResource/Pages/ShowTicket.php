@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\SharedResources\TicketResource\Pages;
+namespace App\Filament\SharedResources\Ticket\TicketResource\Pages;
 
-use App\Filament\SharedResources\TicketResource;
+use App\Filament\SharedResources\Ticket\TicketResource;
 use Filament\Resources\Pages\ViewRecord;
 
 class ShowTicket extends ViewRecord

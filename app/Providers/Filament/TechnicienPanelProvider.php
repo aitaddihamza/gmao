@@ -33,7 +33,7 @@ class TechnicienPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->databaseNotificationsPolling('1s')
             ->discoverResources(in: app_path('Filament/Technicien/Resources'), for: 'App\\Filament\\Technicien\\Resources')
-            ->discoverResources(in: app_path('Filament/SharedResources'), for: 'App\\Filament\\SharedResources')
+            ->discoverResources(in: app_path('Filament/SharedResources/Ticket'), for: 'App\\Filament\\SharedResources\\Ticket')
             ->discoverPages(in: app_path('Filament/Technicien/Pages'), for: 'App\\Filament\\Technicien\\Pages')
             ->pages([
                 Pages\Dashboard::class,

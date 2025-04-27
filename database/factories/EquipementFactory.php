@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Bloc;
+use App\Models\TypeEquipement;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Carbon\Carbon;
 
@@ -23,24 +25,25 @@ class EquipementFactory extends Factory
         // Générer une date de mise en service entre la date d'acquisition et aujourd'hui
         $dateMiseEnService = $this->faker->dateTimeBetween($dateAcquisition, 'now');
 
-        $dateFinGarantie = Carbon::parse($dateAcquisition)->addMonths(rand(12, 36));
+        // Générer une date de fin de garantie entre maintenant et 3 ans dans le futur
+        $dateFinGarantie = $this->faker->dateTimeBetween('now', '+3 years');
 
-        // Définir les valeurs par défaut pour les attributs de la table equipements
         return [
-            'bloc_id' => \App\Models\Bloc::factory(),
-            'designation' => $this->faker->word(),
+            'bloc_id' => Bloc::factory(),
+            'type_equipement_id' => TypeEquipement::factory(),
+            'designation' => $this->faker->randomElement([
+                'Appareil à ECG', 'Échographe', 'Défibrillateur', 'Respirateur',
+                'Scanner', 'IRM', 'Moniteur de signes vitaux', 'Pompe à perfusion',
+                'Analyseur de gaz du sang', 'Dialyseur', 'Table opératoire', 'Endoscope'
+            ]),
             'marque' => $this->faker->company(),
             'modele' => $this->faker->word() . '-' . $this->faker->numberBetween(100, 999),
-            'numero_serie' => 'EQ-' . $this->faker->unique()->regexify('[A-Z]{2}[0-9]{6}'),
+            'numero_serie' => 'SN-' . $this->faker->unique()->regexify('[A-Z]{3}[0-9]{4}'),
             'date_acquisition' => $dateAcquisition,
             'date_mise_en_service' => $dateMiseEnService,
             'etat' => $this->faker->randomElement(['bon', 'acceptable', 'mauvais', 'hors_service']),
             'fournisseur' => $this->faker->company(),
             'contact_fournisseur' => $this->faker->phoneNumber(),
-            'type_equipement' => $this->faker->randomElement([
-                'imagerie', 'néphrologie', 'chirurgie', 'réanimation',
-                'cardiologie', 'neurologie', 'obstétrique', 'anesthésie'
-            ]),
             'date_fin_garantie' => $dateFinGarantie,
             'sous_contrat' => $this->faker->boolean(),
             'type_contrat' => function (array $attributes) {
@@ -52,4 +55,4 @@ class EquipementFactory extends Factory
             'criticite' => $this->faker->randomElement(['haute', 'moyenne', 'basse'])
         ];
     }
-}
+} 

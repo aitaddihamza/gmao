@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Filament\Responsable\Resources\EquipementResource\Pages;
+namespace App\Filament\SharedResources\Equipement\EquipementResource\Pages;
 
-use App\Filament\Responsable\Resources\EquipementResource;
-use Filament\Actions;
+use App\Filament\SharedResources\Equipement\EquipementResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateEquipement extends CreateRecord

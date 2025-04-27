@@ -18,7 +18,8 @@ class PieceFactory extends Factory
     {
         return [
             'designation' => $this->faker->word(),
-            'reference' => $this->faker->word(),
+            // the reference should be unique
+            'reference' => $this->faker->unique()->word(),
             'quantite_stock' => $this->faker->numberBetween(1, 100),
             'fournisseur' => $this->faker->word(),
             'prix_unitaire' => $this->faker->randomFloat(2, 1, 1000),

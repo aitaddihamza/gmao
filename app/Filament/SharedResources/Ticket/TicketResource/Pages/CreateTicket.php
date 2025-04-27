@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\SharedResources\TicketResource\Pages;
+namespace App\Filament\SharedResources\Ticket\TicketResource\Pages;
 
-use App\Filament\SharedResources\TicketResource;
+use App\Filament\SharedResources\Ticket\TicketResource;
 use App\Models\User;
 use Filament\Notifications\Notification;
 use Filament\Notifications\Actions\Action;
@@ -27,7 +27,7 @@ class CreateTicket extends CreateRecord
                     ->success()
                     ->actions([
                         Action::make('View Ticket')
-                            ->url(route('filament.'.$assignee->role.'.resources.tickets.show', $ticket->id))
+                            ->url($assignee->role . '/tickets/' . $ticket->id)
                             ->icon('heroicon-o-eye'),
                     ])
                     ->sendToDatabase($assignee);

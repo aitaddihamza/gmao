@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\SharedResources;
+namespace App\Filament\SharedResources\Ticket;
 
-use App\Filament\SharedResources\TicketResource\Pages;
+use App\Filament\SharedResources\Ticket\TicketResource\Pages;
 use App\Models\Ticket;
 use App\Models\User;
 use Filament\Forms;
@@ -119,6 +119,9 @@ class TicketResource extends Resource
                     ->label('Équipement concerné')
                     ->url(fn ($record) => route('filament.engineer.resources.tickets.show', $record->id)),
 
+                Tables\Columns\TextColumn::make('createur.name')
+                    ->label('Créé par')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('assignee.name')
                     ->label('Assigné à')
                     ->sortable(),

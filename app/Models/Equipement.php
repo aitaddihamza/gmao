@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Ticket;
 use App\Models\Bloc;
 use Illuminate\Notifications\Notifiable;
+use App\Models\TypeEquipement;
 
 class Equipement extends Model
 {
@@ -17,6 +18,7 @@ class Equipement extends Model
 
     protected $fillable = [
         'bloc_id',
+        'type_equipement_id',
         'designation',
         'marque',
         'modele',
@@ -26,7 +28,6 @@ class Equipement extends Model
         'etat',
         'fournisseur',
         'contact_fournisseur',
-        'type_equipement',
         'date_fin_garantie',
         'sous_contrat',
         'type_contrat',
@@ -47,6 +48,16 @@ class Equipement extends Model
         return $this->hasMany(Ticket::class);
     }
 
+    public function bloc(): BelongsTo
+    {
+        return $this->belongsTo(Bloc::class);
+    }
+
+    public function typeEquipement(): BelongsTo
+    {
+        return $this->belongsTo(TypeEquipement::class);
+    }
+
     // Méthodes utiles
     public function getFullDesignation(): string
     {
@@ -59,15 +70,10 @@ class Equipement extends Model
             ->where('type_ticket', 'maintenance')
             ->exists();
     }
-    public function bloc(): BelongsTo
-    {
-        return $this->belongsTo(Bloc::class, 'bloc_id');
-    }
 
     public function maintenancePreventives(): HasMany
     {
         return $this->hasMany(MaintenancePreventive::class, 'equipement_id');
     }
-
 
 }
