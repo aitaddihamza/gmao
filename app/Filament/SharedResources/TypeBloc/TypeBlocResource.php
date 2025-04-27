@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Responsable\Resources;
-
-use App\Filament\Responsable\Resources\TypeBlocResource\Pages;
+namespace App\Filament\SharedResources\TypeBloc;
+    
+use App\Filament\SharedResources\TypeBloc\TypeBlocResource\Pages;
 use App\Models\TypeBloc;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -79,4 +79,5 @@ class TypeBlocResource extends Resource
             'view' => Pages\ViewTypeBloc::route('/{record}'),
         ];
     }
-} 
+}
+

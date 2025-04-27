@@ -31,9 +31,12 @@ class MajeurPanelProvider extends PanelProvider
             ])
             ->discoverResources(in: app_path('Filament/Majeur/Resources'), for: 'App\\Filament\\Majeur\\Resources')
             ->discoverPages(in: app_path('Filament/Majeur/Pages'), for: 'App\\Filament\\Majeur\\Pages')
-            ->pages([
-                Pages\Dashboard::class,
-            ])
+            ->discoverResources(in: app_path('Filament/SharedResources/Piece'), for: 'App\\Filament\\SharedResources\\Piece')
+            ->discoverResources(in: app_path('Filament/SharedResources/Ticket'), for: 'App\\Filament\\SharedResources\\Ticket')
+            ->discoverResources(in: app_path('Filament/SharedResources/Equipement'), for: 'App\\Filament\\SharedResources\\Equipement')
+            ->discoverResources(in: app_path('Filament/SharedResources/TypeEquipement'), for: 'App\\Filament\\SharedResources\\TypeEquipement')
+            ->discoverResources(in: app_path('Filament/SharedResources/Bloc'), for: 'App\\Filament\\SharedResources\\Bloc')
+            ->discoverResources(in: app_path('Filament/SharedResources/TypeBloc'), for: 'App\\Filament\\SharedResources\\TypeBloc')
             ->discoverWidgets(in: app_path('Filament/Majeur/Widgets'), for: 'App\\Filament\\Majeur\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,

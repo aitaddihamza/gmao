@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Responsable\Resources;
+namespace App\Filament\SharedResources\TypeEquipement;
 
-use App\Filament\Responsable\Resources\TypeEquipementResource\Pages;
+use App\Filament\SharedResources\TypeEquipement\TypeEquipementResource\Pages;
 use App\Models\TypeEquipement;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -79,4 +79,5 @@ class TypeEquipementResource extends Resource
             'view' => Pages\ViewTypeEquipement::route('/{record}'),
         ];
     }
-} 
+}
+

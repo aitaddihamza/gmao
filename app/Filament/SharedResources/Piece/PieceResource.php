@@ -1,17 +1,14 @@
 <?php
 
-namespace App\Filament\Responsable\Resources;
+namespace App\Filament\SharedResources\Piece;
 
-use App\Filament\Responsable\Resources\PieceResource\Pages;
-use App\Filament\Responsable\Resources\PieceResource\RelationManagers;
+use App\Filament\SharedResources\Piece\PieceResource\Pages;
 use App\Models\Piece;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PieceResource extends Resource
 {

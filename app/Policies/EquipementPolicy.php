@@ -5,7 +5,6 @@ namespace App\Policies;
 use App\Models\User;
 use App\Models\Equipement;
 
-
 class EquipementPolicy
 {
     /**
@@ -21,33 +20,34 @@ class EquipementPolicy
 
     /**
      * Détermine si l'utilisateur peut modifier un équipement
-     * Seuls les responsables peuvent modifier
+     * Seuls les majeurs et les ingénieurs peuvent modifier
      */
     public function edit(User $user, Equipement $equipement): bool
     {
-        return $user->role === 'responsable';
+        return $user->role === 'majeur' || $user->role === 'ingenieur';
     }
 
     /**
      * Détermine si l'utilisateur peut supprimer un équipement
-     * Seuls les responsables peuvent supprimer
+    * Seuls les majeurs peuvent supprimer
      */
     public function delete(User $user, Equipement $equipement): bool
     {
-        return $user->role === 'responsable';
+         return $user->role === 'majeur' || $user->role === 'ingenieur' || $user->role == 'chef';
     }
-    
+
     /**
      * Détermine si l'utilisateur peut créer un équipement
-     * Seuls les responsables peuvent créer
+     * Seuls les majeurs peuvent créer
      */
+
     public function create(User $user): bool
     {
-        return $user->role === 'responsable';
+        return $user->role === 'majeur' || $user->role === 'ingenieur' || $user->role == 'chef';
     }
 
     public function update(User $user, Equipement $equipement): bool
     {
-        return $user->role === 'responsable';
+        return $user->role === 'majeur' || $user->role === 'ingenieur' || $user->role == 'chef';
     }
 }

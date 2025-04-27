@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Filament\Responsable\Resources;
+namespace App\Filament\SharedResources\Bloc;
 
-use App\Filament\Responsable\Resources\BlocResource\Pages;
-use App\Filament\Responsable\Resources\BlocResource\RelationManagers;
+use App\Filament\SharedResources\Bloc\BlocResource\Pages;
 use App\Models\Bloc;
 use App\Models\TypeBloc;
 use Filament\Forms;

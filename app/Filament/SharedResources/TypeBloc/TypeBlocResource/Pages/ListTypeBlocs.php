@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Responsable\Resources\TypeBlocResource\Pages;
+namespace App\Filament\SharedResources\TypeBloc\TypeBlocResource\Pages;
 
-use App\Filament\Responsable\Resources\TypeBlocResource;
+use App\Filament\SharedResources\TypeBloc\TypeBlocResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 

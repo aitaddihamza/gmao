@@ -28,7 +28,7 @@ class EditTicket extends EditRecord
                     ->success()
                     ->actions([
                         Action::make('View Ticket')
-                            ->url($assignee->role . '/tickets/' . $ticket->id)
+                            ->url(route('filament.'.$assignee->role.'.pages.dashboard')  . '/tickets/' . $ticket->id)
                             ->icon('heroicon-o-eye'),
                     ])
                     ->sendToDatabase($assignee);

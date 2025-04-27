@@ -5,17 +5,19 @@ use App\Http\Controllers\MaintenancePreventiveController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    if(auth()->check()) {
+    if (auth()->check()) {
         $userRole = auth()->user()->role;
-        $userRole = $userRole === 'ingenieur' ? 'engineer' : $userRole; 
+        $userRole = $userRole === 'ingenieur' ? 'engineer' : $userRole;
         return redirect()->route("filament.{$userRole}.pages.dashboard");
     }
     return view('welcome');
 });
 
+
+
 Route::get('/dashboard', function () {
     $userRole = auth()->user()->role;
-    $userRole = $userRole === 'ingenieur' ? 'engineer' : $userRole; 
+    $userRole = $userRole === 'ingenieur' ? 'engineer' : $userRole;
     return redirect()->route("filament.{$userRole}.pages.dashboard");
 })->middleware(['auth', 'verified'])->name('dashboard');
 

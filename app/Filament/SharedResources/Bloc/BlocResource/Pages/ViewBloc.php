@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Responsable\Resources\BlocResource\Pages;
+namespace App\Filament\SharedResources\Bloc\BlocResource\Pages;
 
-use App\Filament\Responsable\Resources\BlocResource;
+use App\Filament\SharedResources\Bloc\BlocResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -17,3 +17,4 @@ class ViewBloc extends ViewRecord
         ];
     }
 }
+

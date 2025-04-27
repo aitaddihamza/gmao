@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Filament\Responsable\Resources\BlocResource\Pages;
+namespace App\Filament\SharedResources\Bloc\BlocResource\Pages;
 
-use App\Filament\Responsable\Resources\BlocResource;
-use Filament\Actions;
+use App\Filament\SharedResources\Bloc\BlocResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateBloc extends CreateRecord
