@@ -1,0 +1,86 @@
+<?php
+
+namespace App\Filament\Responsable\Resources\EquipementResource\Pages;
+
+use App\Filament\Responsable\Resources\EquipementResource;
+use Filament\Resources\Pages\ViewRecord;
+use Filament\Actions;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
+
+class ViewEquipement extends ViewRecord
+{
+    protected static string $resource = EquipementResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+        ];
+    }
+
+    public function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('Informations générales')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('bloc.nom_bloc')
+                            ->label('Bloc'),
+                        Infolists\Components\TextEntry::make('designation'),
+                        Infolists\Components\TextEntry::make('marque'),
+                        Infolists\Components\TextEntry::make('modele'),
+                        Infolists\Components\TextEntry::make('numero_serie')
+                            ->label('Numéro de série'),
+                    ])->columns(2),
+
+                Infolists\Components\Section::make('Dates importantes')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('date_acquisition')
+                            ->date()
+                            ->label('Date d\'acquisition'),
+                        Infolists\Components\TextEntry::make('date_mise_en_service')
+                            ->date()
+                            ->label('Date de mise en service'),
+                        Infolists\Components\TextEntry::make('date_fin_garantie')
+                            ->date()
+                            ->label('Date de fin de garantie'),
+                    ])->columns(3),
+
+                Infolists\Components\Section::make('État et maintenance')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('etat')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'bon' => 'success',
+                                'acceptable' => 'warning',
+                                'mauvais' => 'danger',
+                                'hors_service' => 'danger',
+                                default => 'gray',
+                            }),
+                        Infolists\Components\TextEntry::make('criticite')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'haute' => 'danger',
+                                'moyenne' => 'warning',
+                                'basse' => 'success',
+                                default => 'gray',
+                            }),
+                        Infolists\Components\IconEntry::make('sous_contrat')
+                            ->boolean()
+                            ->label('Sous contrat'),
+                    ])->columns(3),
+
+                Infolists\Components\Section::make('Informations contractuelles')
+                    ->schema([
+                        Infolists\Components\TextEntry::make('type_contrat')
+                            ->label('Type de contrat'),
+                        Infolists\Components\TextEntry::make('numero_contrat')
+                            ->label('Numéro de contrat'),
+                        Infolists\Components\TextEntry::make('fournisseur'),
+                        Infolists\Components\TextEntry::make('contact_fournisseur')
+                            ->label('Contact fournisseur'),
+                    ])->columns(2),
+            ]);
+    }
+} 

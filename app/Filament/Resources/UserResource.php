@@ -42,7 +42,7 @@ class UserResource extends Resource
                     ->options([
                         'technicien' => 'Technicien',
                         'ingenieur' => 'Ingénieur',
-                        'chef' => 'Chef',
+                        'chef' => 'Directeur',
                         'majeur' => 'Majeur',
                         'responsable' => 'Responsable',
                     ])
@@ -88,7 +88,7 @@ class UserResource extends Resource
                     ->options([
                         'technicien' => 'Technicien',
                         'ingenieur' => 'Ingénieur',
-                        'chef' => 'Chef',
+                        'chef' => 'Directeur',
                         'majeur' => 'Majeur',
                         'responsable' => 'Responsable',
                     ])

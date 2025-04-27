@@ -209,6 +209,7 @@ class EquipementResource extends Resource
                     ]),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -240,6 +241,7 @@ class EquipementResource extends Resource
             'index' => Pages\ListEquipements::route('/'),
             'create' => Pages\CreateEquipement::route('/create'),
             'edit' => Pages\EditEquipement::route('/{record}/edit'),
+            'view' => Pages\ViewEquipement::route('/{record}'),
         ];
     }
 }
