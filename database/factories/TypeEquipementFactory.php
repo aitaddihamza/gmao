@@ -22,10 +22,11 @@ class TypeEquipementFactory extends Factory
      *
      * @return array<string, mixed>
      */
+
     public function definition(): array
     {
         return [
             'nom' => $this->faker->unique()->word() . ' ' . $this->faker->word(),
         ];
     }
-} 
+}

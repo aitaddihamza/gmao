@@ -20,6 +20,7 @@ class EditTicket extends EditRecord
         // Notify the assigned user
         if ($ticket->user_assignee_id) {
             $assignee = User::find($ticket->user_assignee_id);
+            $url = route("filament.".$assignee->role.".resources.tickets.show", $ticket->id);
 
             if ($assignee) {
                 Notification::make()
@@ -28,7 +29,7 @@ class EditTicket extends EditRecord
                     ->success()
                     ->actions([
                         Action::make('View Ticket')
-                            ->url(route('filament.'.$assignee->role.'.pages.dashboard')  . '/tickets/' . $ticket->id)
+                            ->url($url)
                             ->icon('heroicon-o-eye'),
                     ])
                     ->sendToDatabase($assignee);

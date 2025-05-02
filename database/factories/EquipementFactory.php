@@ -29,8 +29,8 @@ class EquipementFactory extends Factory
         $dateFinGarantie = $this->faker->dateTimeBetween('now', '+3 years');
 
         return [
-            'bloc_id' => Bloc::factory(),
-            'type_equipement_id' => TypeEquipement::factory(),
+            'bloc_id' => rand(1, 9),
+            'type_equipement_id' => rand(1, 15),
             'designation' => $this->faker->randomElement([
                 'Appareil à ECG', 'Échographe', 'Défibrillateur', 'Respirateur',
                 'Scanner', 'IRM', 'Moniteur de signes vitaux', 'Pompe à perfusion',
@@ -55,4 +55,4 @@ class EquipementFactory extends Factory
             'criticite' => $this->faker->randomElement(['haute', 'moyenne', 'basse'])
         ];
     }
-} 
+}

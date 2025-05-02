@@ -2,13 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\TypeBloc;
 use App\Models\User;
 use App\Models\Bloc;
 use App\Models\Equipement;
 use App\Models\TypeEquipement;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Piece;
-
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             TypeEquipementSeeder::class,
             TypeBlocSeeder::class,
+            UserSeeder::class,
         ]);
 
         // Créer l'utilisateur admin
@@ -39,7 +40,11 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Créer 10 blocs avec des données différentes
-        Bloc::factory()->count(10)->create();
+        for ($i = 1; $i < 10; $i++) {
+            Bloc::factory()->count(1)->create([
+                'type_bloc_id' => rand(1, 10),
+            ]);
+        }
 
         // Créer 30 pièces
         Piece::factory()->count(30)->create();

@@ -19,6 +19,7 @@ class CreateTicket extends CreateRecord
         // Notify the assigned user if a user was assigned
         if ($ticket->user_assignee_id) {
             $assignee = User::find($ticket->user_assignee_id);
+            $url = route("filament.".$assignee->role.".resources.tickets.show", $ticket->id);
 
             if ($assignee) {
                 Notification::make()
@@ -27,7 +28,7 @@ class CreateTicket extends CreateRecord
                     ->success()
                     ->actions([
                         Action::make('View Ticket')
-                            ->url($assignee->role . '/tickets/' . $ticket->id)
+                            ->url($url)
                             ->icon('heroicon-o-eye'),
                     ])
                     ->sendToDatabase($assignee);

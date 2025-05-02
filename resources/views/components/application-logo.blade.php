@@ -1,13 +1,16 @@
 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" {{ $attributes }}>
     <!-- Cercle extérieur -->
-    <circle cx="100" cy="100" r="90" fill="none" stroke="currentColor" stroke-width="8"/>
-    
+    <circle cx="100" cy="100" r="90" fill="none" stroke="currentColor" stroke-width="8" />
+
     <!-- Engrenage -->
-    <path d="M100 30 L100 40 M100 160 L100 170 M30 100 L40 100 M160 100 L170 100 M45 45 L52 52 M148 148 L155 155 M45 155 L52 148 M148 52 L155 45" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
-    
+    <path
+        d="M100 30 L100 40 M100 160 L100 170 M30 100 L40 100 M160 100 L170 100 M45 45 L52 52 M148 148 L155 155 M45 155 L52 148 M148 52 L155 45"
+        stroke="currentColor" stroke-width="6" stroke-linecap="round" />
+
     <!-- Cercle intérieur -->
-    <circle cx="100" cy="100" r="30" fill="none" stroke="currentColor" stroke-width="6"/>
-    
+    <circle cx="100" cy="100" r="30" fill="none" stroke="currentColor" stroke-width="6" />
+
     <!-- Lettres GMAO stylisées -->
-    <text x="100" y="105" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="currentColor">GMAO</text>
+    <text x="100" y="105" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle"
+        fill="currentColor">GMAO</text>
 </svg>

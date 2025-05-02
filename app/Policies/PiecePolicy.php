@@ -17,24 +17,24 @@ class PiecePolicy
 
     public function create(User $user): bool
     {
-        return $user->role === 'majeur';
+        return $user->role === 'majeur' || $user->role == 'ingenieur';
     }
 
 
     public function edit(User $user, Piece $piece): bool
     {
-        return $user->role === 'majeur';
+        return $user->role === 'majeur' || $user->role == 'ingenieur';
     }
 
 
     public function delete(User $user, Piece $piece): bool
     {
-        return $user->role === 'majeur';
+        return $user->role === 'majeur' || $user->role == 'ingenieur';
     }
 
 
     public function update(User $user, Piece $piece): bool
     {
-        return $user->role === 'majeur';
+        return $user->role === 'majeur' || $user->role == 'ingenieur';
     }
 }

@@ -10,7 +10,7 @@ Route::get('/', function () {
         $userRole = $userRole === 'ingenieur' ? 'engineer' : $userRole;
         return redirect()->route("filament.{$userRole}.pages.dashboard");
     }
-    return view('welcome');
+    return redirect(route('login'));
 });
 
 

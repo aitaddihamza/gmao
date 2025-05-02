@@ -14,7 +14,7 @@ class TicketPolicy
     // les utilisateurs autorisés
     public const ALLOWED_ROLES = [
         'ingenieur',
-        'techicien',
+        'technicien',
     ];
 
 

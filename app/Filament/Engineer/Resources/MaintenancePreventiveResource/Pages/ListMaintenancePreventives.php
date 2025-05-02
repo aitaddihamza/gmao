@@ -15,7 +15,11 @@ class ListMaintenancePreventives extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Planifier')
+                ->icon('heroicon-o-plus')
+                ->url(MaintenancePreventiveResource::getUrl('create'))
+                ->color('primary'),
         ];
     }
 

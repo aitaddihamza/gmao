@@ -11,8 +11,10 @@ class ShowTicket extends ViewRecord
 
     protected function getHeaderActions(): array
     {
+        // add close and edit buttons when showing ticket
+
         return [
-            // Add any actions you want to display on the show page, if needed
+            //
         ];
     }
 }

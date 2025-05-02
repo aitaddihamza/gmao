@@ -25,8 +25,9 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->id('admin') 
-            ->brandName('GMAO')
+            ->id('admin')
+            ->brandLogo(asset('favicon.svg'))
+            ->brandLogoHeight('3rem')
             ->path('admin')
             // ->login()
             ->colors([
