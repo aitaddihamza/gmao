@@ -24,6 +24,8 @@ class MaintenancePreventive extends Model
         'description',
         'statut',
         'periodicite_jours',
+        'type_externe',
+        'fournisseur',
         'remarques',
     ];
 

@@ -50,53 +50,58 @@ class EditMaintenancePreventive extends EditRecord
         return $data;
     }
 
+
     protected function afterSave(): void
     {
         $record = $this->getRecord();
 
-        // Handle pieces synchronization
-        if (isset($this->pieces)) {
-            $pieceData = [];
-            $newPiecesState = collect($this->pieces);
+        $oldPieces = $record->pieces;
+        // les nouveaux pieces utilisées
+        $newPieces = collect($this->pieces);
+        // dd($oldPieces, $newPieces);
+        // get the removed pieces
+        $removedItems = $oldPieces->whereNotIn('id', $newPieces->pluck('piece_id'));
 
-            // Ensure $this->originalPiecesState is not null
-            $removedItems = $this->originalPiecesState
-                ? $this->originalPiecesState->whereNotIn('piece_id', $newPiecesState->pluck('piece_id'))
-                : collect();
-
-            foreach ($removedItems as $removedItem) {
-                $pieceId = $removedItem['piece_id'];
-                $quantiteUtilisee = $removedItem['quantite_utilisee'];
-
-                if ($pieceId && $quantiteUtilisee > 0) {
-                    $piece = \App\Models\Piece::find($pieceId);
-                    if ($piece) {
-                        // Restore the stock of the removed piece
-                        $piece->increment('quantite_stock', $quantiteUtilisee);
-                    }
+        if (count($removedItems) > 0) {
+            // dd($removedItems);
+            // first we need to reincrement theire stock
+            $removedItems->each(function ($removedItem) {
+                $piece = Piece::find($removedItem->id);
+                if ($piece) {
+                    $piece->increment('quantite_stock', $removedItem->pivot->quantite_utilisee);
                 }
-            }
+            });
+            // second we need to detached theme from this MaintenancePreventive
+            $record->pieces()->detach($removedItems->pluck('id'));
 
-            // Process the new state for synchronization
-            foreach ($this->pieces as $piece) {
-                if (!empty($piece['piece_id']) && isset($piece['quantite_utilisee'])) {
-                    $pieceId = $piece['piece_id'];
-                    $quantite = $piece['quantite_utilisee'];
-                    $pieceData[$pieceId] = ['quantite_utilisee' => $quantite];
-
-                    // Update stock
-                    $pieceObj = \App\Models\Piece::find($pieceId);
-                    if ($pieceObj) {
-                        $ancienneQuantite = $record->pieces->where('id', $pieceId)->first()?->pivot->quantite_utilisee ?? 0;
-                        $pieceObj->quantite_stock += $ancienneQuantite - $quantite;
-                        $pieceObj->save();
-                    }
-                }
-            }
-
-            $record->pieces()->sync($pieceData);
         }
 
-        $record->load('pieces'); // Reload the record to ensure updated values
+        // loop the newPieces, check if we already have that piece in the pivot table, if so and if it's updated we need to reincrement the stock then update it by the new quantite_utilisee, if the piece isn't exists we simply attach it
+
+        // dd($oldPieces, $newPieces);
+        $newPieces->each(function ($piece) use ($oldPieces, $record) {
+            // check if we already have this piece
+            $pieceModel = Piece::find($piece['piece_id']);
+            if ($oldPieces->contains('id', $piece['piece_id'])) {
+                $oldPiece = $oldPieces->where('id', $piece['piece_id'])->first();
+                // increment its stock by the quantite_utilisee
+                if ($pieceModel) {
+                    $pieceModel->increment('quantite_stock', $oldPiece->pivot->quantite_utilisee);
+                }
+                // detach the old piece
+                $record->pieces()->detach($piece['piece_id']);
+            }
+            // decrement the stock by the new quantite_utilisee
+            $pieceModel->decrement('quantite_stock', $piece['quantite_utilisee']);
+        });
+
+        // now attach the new pieces
+        $newPieces->each(function ($piece) use ($record) {
+            $record->pieces()->attach($piece['piece_id'], [
+                'quantite_utilisee' => $piece['quantite_utilisee'],
+            ]);
+        });
+
+        $record->load('pieces'); // Reload the record to reflect the changes
     }
 }

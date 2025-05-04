@@ -12,6 +12,7 @@ class ListMaintenancePreventives extends ListRecords
 {
     protected static string $resource = MaintenancePreventiveResource::class;
 
+
     protected function getHeaderActions(): array
     {
         return [

@@ -84,4 +84,3 @@ class ViewEquipement extends ViewRecord
             ]);
     }
 }
-

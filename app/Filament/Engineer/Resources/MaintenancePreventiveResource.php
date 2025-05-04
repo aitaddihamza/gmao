@@ -4,13 +4,11 @@ namespace App\Filament\Engineer\Resources;
 
 use App\Filament\Engineer\Resources\MaintenancePreventiveResource\Pages;
 use App\Models\MaintenancePreventive;
-use App\Models\Piece;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class MaintenancePreventiveResource extends Resource
 {
@@ -58,6 +56,13 @@ class MaintenancePreventiveResource extends Resource
                         'reportee' => 'Reportée',
                         'annulee' => 'Annulée',
                     ]),
+                Forms\Components\Toggle::make('type_externe')
+                    ->label('Type externe ?')
+                    ->reactive(),
+                Forms\Components\TextInput::make('fournisseur')
+                    ->maxLength(255)
+                    ->placeholder('Nom du fournisseur')
+                    ->hidden(fn (Forms\Get $get) => !$get('type_externe')),
                 Forms\Components\Textarea::make('description')
                     ->required()
                     ->columnSpanFull(),
@@ -86,8 +91,8 @@ class MaintenancePreventiveResource extends Resource
                             ->minValue(1)
                             ->reactive()
                             ->rules([
-                                function (Forms\Get $get) {
-                                    return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                function (Forms\Get $get, $record) {
+                                    return function (string $attribute, $value, \Closure $fail) use ($get, $record) {
                                         $pieceId = $get('piece_id');
                                         if (!$pieceId) {
                                             return;
@@ -97,9 +102,6 @@ class MaintenancePreventiveResource extends Resource
                                         if (!$piece) {
                                             return;
                                         }
-
-                                        $record = $get('../../record');
-                                        $quantiteDejaUtilisee = 0;
 
                                         if ($record) {
                                             $piecePivot = $record->pieces->where('id', $pieceId)->first()?->pivot;
@@ -164,8 +166,9 @@ class MaintenancePreventiveResource extends Resource
 
     public static function table(Table $table): Table
     {
+
         return $table
-            ->columns([
+                ->columns([
                 Tables\Columns\TextColumn::make('equipement.designation')
                     ->label('Équipement')
                     ->sortable()
@@ -192,6 +195,10 @@ class MaintenancePreventiveResource extends Resource
                         'reportee' => 'gray',
                         'annulee' => 'danger',
                     }),
+
+                Tables\Columns\IconColumn::make('type_externe')
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('fournisseur'),
                 Tables\Columns\TextColumn::make('periodicite_jours')
                     ->numeric()
                     ->sortable(),
@@ -213,10 +220,12 @@ class MaintenancePreventiveResource extends Resource
                         return !empty($piecesInfo) ? implode(', ', $piecesInfo) : 'Aucune pièce';
                     }),
             ])
+            ->defaultSort('date_planifiee', 'desc')
             ->filters([
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -240,6 +249,7 @@ class MaintenancePreventiveResource extends Resource
             'index' => Pages\ListMaintenancePreventives::route('/'),
             'create' => Pages\CreateMaintenancePreventive::route('/create'),
             'edit' => Pages\EditMaintenancePreventive::route('/{record}/edit'),
+            'view' => Pages\ViewMaintenancePreventive::route('/{record}'),
         ];
     }
 }
