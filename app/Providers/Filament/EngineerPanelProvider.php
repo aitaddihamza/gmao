@@ -18,6 +18,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 
 class EngineerPanelProvider extends PanelProvider
 {
@@ -30,6 +31,7 @@ class EngineerPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Blue
             ])
+            ->plugins([FilamentFullCalendarPlugin::make()])
             ->databaseNotifications()
             ->databaseNotificationsPolling('1s')
             ->discoverResources(in: app_path('Filament/Engineer/Resources'), for: 'App\\Filament\\Engineer\\Resources')

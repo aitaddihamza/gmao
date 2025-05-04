@@ -9,14 +9,16 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
 
 class MaintenancePreventiveResource extends Resource
 {
     protected static ?string $model = MaintenancePreventive::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+    protected static ?string $navigationIcon = 'heroicon-o-wrench';
     // sous groupe de maintenance
     protected static ?string $navigationGroup = 'Maintenance';
+    // sous groupe maintenance préventive
     protected static ?int $navigationSort = 1;
     protected static ?string $navigationLabel = 'Maintenance préventive';
     protected static ?string $slug = 'maintenance-preventive';
@@ -169,6 +171,13 @@ class MaintenancePreventiveResource extends Resource
     {
 
         return $table
+                ->headerActions([
+                    Action::make('calendrier')
+                        ->label('Calendrier')
+                        ->url(fn () => route('filament.engineer.pages.calendar'))
+                        ->icon('heroicon-o-calendar') // optional icon
+                        ->color('primary'), // optional color
+                ])
                 ->columns([
                 Tables\Columns\TextColumn::make('equipement.designation')
                     ->label('Équipement')
