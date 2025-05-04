@@ -32,7 +32,6 @@ class TicketResource extends Resource
                         Forms\Components\Select::make('type_ticket')
                             ->options([
                                 'correctif' => 'Maintenance corrective',
-                                'preventif' => 'Maintenance préventive',
                                 'installation' => 'Installation',
                                 'formation' => 'Formation',
                                 'autre' => 'Autre',

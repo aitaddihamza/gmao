@@ -35,7 +35,6 @@ class MaintenancePreventiveResource extends Resource
                     ->label('Équipement concerné'),
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'name')
-                    ->required()
                     ->searchable()
                     ->preload()
                     ->label('Technicien responsable')
