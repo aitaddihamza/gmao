@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Filament\Engineer\Resources\MaintenancePreventiveResource\Pages;
+namespace App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventiveResource\Pages;
 
+use App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventiveResource;
 use App\Models\MaintenancePreventive;
 use App\Models\Piece;
-use App\Filament\Engineer\Resources\MaintenancePreventiveResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use Filament\Notifications\Notification;
+use Filament\Notifications\Actions\Action;
 
 class EditMaintenancePreventive extends EditRecord
 {
@@ -103,5 +105,20 @@ class EditMaintenancePreventive extends EditRecord
         });
 
         $record->load('pieces'); // Reload the record to reflect the changes
+
+        $technicienResponsable = User::find($this->getRecord()->user_id);
+        if (isset($technicienResponsable)) {
+            Notification::make()
+                ->title('Maintenace Preventive Planifié')
+                ->body("vous êtes affécté à un nouveau maintenance préventive Planifié ")
+                ->success()
+                ->actions([
+                    Action::make('Voir+')
+                        ->url('filament.technicien.resources.maintenance-preventive.view', $this->getRecord()->id)
+                        ->icon('heroicon-o-eye'),
+                ])
+                ->sendToDatabase($technicienResponsable);
+        }
+
     }
 }

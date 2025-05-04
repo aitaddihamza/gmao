@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Engineer\Resources;
+namespace App\Filament\SharedResources\MaintenancePreventive;
 
-use App\Filament\Engineer\Resources\MaintenancePreventiveResource\Pages;
+use App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventiveResource\Pages;
 use App\Models\MaintenancePreventive;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -103,6 +103,7 @@ class MaintenancePreventiveResource extends Resource
                                             return;
                                         }
 
+                                        $quantiteDejaUtilisee = 0;
                                         if ($record) {
                                             $piecePivot = $record->pieces->where('id', $pieceId)->first()?->pivot;
                                             if ($piecePivot) {

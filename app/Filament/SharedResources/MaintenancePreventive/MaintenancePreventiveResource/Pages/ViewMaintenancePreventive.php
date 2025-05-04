@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Engineer\Resources\MaintenancePreventiveResource\Pages;
+namespace App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventiveResource\Pages;
 
-use App\Filament\Engineer\Resources\MaintenancePreventiveResource;
+use App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventiveResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 

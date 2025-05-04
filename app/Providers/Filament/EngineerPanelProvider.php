@@ -34,6 +34,7 @@ class EngineerPanelProvider extends PanelProvider
             ->databaseNotificationsPolling('1s')
             ->discoverResources(in: app_path('Filament/Engineer/Resources'), for: 'App\\Filament\\Engineer\\Resources')
             ->discoverResources(in: app_path('Filament/SharedResources/Ticket'), for: 'App\\Filament\\SharedResources\\Ticket')
+            ->discoverResources(in: app_path('Filament/SharedResources/MaintenancePreventive'), for: 'App\\Filament\\SharedResources\\MaintenancePreventive')
             ->discoverResources(in: app_path('Filament/SharedResources/Piece'), for: 'App\\Filament\\SharedResources\\Piece')
             ->discoverResources(in: app_path('Filament/SharedResources/Equipement'), for: 'App\\Filament\\SharedResources\\Equipement')
             ->discoverResources(in: app_path('Filament/SharedResources/TypeEquipement'), for: 'App\\Filament\\SharedResources\\TypeEquipement')

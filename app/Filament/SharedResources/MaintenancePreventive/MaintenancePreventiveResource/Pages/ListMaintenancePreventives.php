@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Engineer\Resources\MaintenancePreventiveResource\Pages;
+namespace App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventiveResource\Pages;
 
+use App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventiveResource;
 use App\Models\Piece;
-use App\Filament\Engineer\Resources\MaintenancePreventiveResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Actions\DeleteAction;

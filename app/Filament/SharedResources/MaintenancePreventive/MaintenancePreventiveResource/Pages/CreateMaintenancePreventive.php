@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Filament\Engineer\Resources\MaintenancePreventiveResource\Pages;
+namespace App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventiveResource\Pages;
 
-use App\Filament\Engineer\Resources\MaintenancePreventiveResource;
+use App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventiveResource;
 use App\Models\Piece;
-use Filament\Actions;
+use App\Models\User;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Notifications\Notification;
+use Filament\Notifications\Actions\Action;
 
 class CreateMaintenancePreventive extends CreateRecord
 {
@@ -48,5 +50,20 @@ class CreateMaintenancePreventive extends CreateRecord
             // Synchroniser les pièces avec l'enregistrement de maintenance
             $record->pieces()->sync($pieceData);
         }
+
+        $technicienResponsable = User::find($this->getRecord()->user_id);
+        if (isset($technicienResponsable)) {
+            Notification::make()
+                ->title('Maintenace Preventive Planifié')
+                ->body("vous êtes affécté à un nouveau maintenance préventive Planifié ")
+                ->success()
+                ->actions([
+                    Action::make('View Ticket')
+                        ->url('filament.technicien.resources.maintenance-preventive.view', $this->getRecord()->id)
+                        ->icon('heroicon-o-eye'),
+                ])
+                ->sendToDatabase($technicienResponsable);
+        }
+
     }
 }
