@@ -196,7 +196,6 @@ class MaintenancePreventiveResource extends Resource
                     ->getStateUsing(fn ($record) => $record->equipement?->designation . ' - ' . $record->equipement?->modele),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Technicien')
-                    ->sortable()
                     ->sortable(query: function ($query, $direction) {
                         return $query->orderBy('user.name', $direction);
                     })

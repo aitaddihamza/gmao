@@ -24,6 +24,7 @@ class TicketResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('equipement_id')
                             ->relationship('equipement', 'designation')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->designation . ' - ' . $record->modele)
                             ->required()
                             ->searchable()
                             ->preload()
@@ -94,11 +95,8 @@ class TicketResource extends Resource
 
                         Forms\Components\Select::make('user_assignee_id')
                             ->label('Technicien assigné')
-                            ->options(
-                                User::whereNotIn('role', ['admin', 'responsable'])
-                                    ->get()
-                                    ->pluck('name', 'id')
-                            )
+                            ->relationship('assignee', 'name')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . '  ' . $record->prenom)
                             ->searchable()
                             ->preload()
                             ->required()
@@ -123,17 +121,26 @@ class TicketResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('equipement.designation')
-                    ->sortable()
+                    ->sortable(query: function ($query, $direction) {
+                        return $query->orderBy('equipement.designation', $direction);
+                    })
                     ->searchable()
+                    ->getStateUsing(fn ($record) => $record->equipement?->designation . ' - ' . $record->equipement?->modele)
                     ->label('Équipement concerné')
                     ->url(fn ($record) => route('filament.engineer.resources.tickets.show', $record->id)),
 
                 Tables\Columns\TextColumn::make('createur.name')
                     ->label('Créé par')
-                    ->sortable(),
+                    ->sortable(query: function ($query, $direction) {
+                        return $query->orderBy('user.name', $direction);
+                    })
+                    ->getStateUsing(fn ($record) => isset($record->createur) ? $record->createur?->name . '  ' . $record->createur?->prenom : 'non spécifié'),
                 Tables\Columns\TextColumn::make('assignee.name')
                     ->label('Assigné à')
-                    ->sortable(),
+                    ->sortable(query: function ($query, $direction) {
+                        return $query->orderBy('user.name', $direction);
+                    })
+                    ->getStateUsing(fn ($record) => isset($record->assignee) ? $record->assignee?->name . '  ' . $record->assignee?->prenom : 'non spécifié'),
 
                 Tables\Columns\TextColumn::make('statut')
                     ->badge()
