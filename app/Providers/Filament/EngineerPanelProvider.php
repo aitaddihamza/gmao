@@ -31,7 +31,10 @@ class EngineerPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Blue
             ])
-            ->plugins([FilamentFullCalendarPlugin::make()])
+            ->plugins([FilamentFullCalendarPlugin::make()
+                    ->selectable()
+                    ->editable()
+            ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('1s')
             ->discoverResources(in: app_path('Filament/Engineer/Resources'), for: 'App\\Filament\\Engineer\\Resources')

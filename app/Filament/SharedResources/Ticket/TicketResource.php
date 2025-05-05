@@ -51,6 +51,16 @@ class TicketResource extends Resource
                             ->default('nouveau')
                             ->live(),
 
+                        Forms\Components\Textarea::make('solution')
+                            ->required()
+                            ->placeholder('Déscription de la solution')
+                            ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif'),
+                        Forms\Components\Toggle::make('type_externe')
+                            ->label('Type externe ?')
+                            ->reactive()
+                            ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif'),
+                        Forms\Components\TextInput::make('fournisseur')
+                            ->hidden(fn (Forms\Get $get) => !$get('type_externe')),
                         Forms\Components\Select::make('priorite')
                             ->options([
                                 'critique' => 'Critique - Urgent',

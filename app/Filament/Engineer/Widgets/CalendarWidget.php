@@ -11,22 +11,12 @@ use Saade\FilamentFullCalendar\Actions;
 
 class CalendarWidget extends FullCalendarWidget
 {
-    // protected static string $view = 'filament.engineer.widgets.calendar-widget';
-
     public Model | string | null $model = MaintenancePreventive::class;
-
-
 
     protected function headerActions(): array
     {
         return [
-            // Actions\CreateAction::disabled()
-                // ->label('Planifier')
-                // ->disabled()
-                // ->icon('heroicon-o-plus')
-                // ->url(MaintenancePreventiveResource::getUrl('create'))
-                // ->color('primary')
-            // ,
+            // Actions existantes...
         ];
     }
 
@@ -36,24 +26,23 @@ class CalendarWidget extends FullCalendarWidget
             Actions\EditAction::make()
         ];
     }
+
     public function eventDidMount(): string
     {
         return <<<JS
     function({ event, el }) {
-        // On récupère le statut via event.extendedProps
         const status = (event.extendedProps?.statut ?? '').toLowerCase();
 
-        // Dictionnaire de correspondance statut -> couleur
         const colors = {
-            'planifiee': '#3b82f6',   // info (bleu)
-            'en_attente': '#facc15',  // warning (jaune)
-            'en_cours': '#6366f1',    // primary (indigo)
-            'terminee': '#10b981',    // success (vert)
-            'reportee': '#9ca3af',    // gray (gris)
-            'annulee': '#ef4444'      // danger (rouge)
+            'planifiee': '#3b82f6',
+            'en_attente': '#facc15',
+            'en_cours': '#6366f1',
+            'terminee': '#10b981',
+            'reportee': '#9ca3af',
+            'annulee': '#ef4444'
         };
 
-        const background = colors[status] ?? '#3b82f6'; // couleur par défaut (info)
+        const background = colors[status] ?? '#3b82f6';
 
         el.style.backgroundColor = background;
         el.style.border = 'none';
@@ -65,7 +54,6 @@ class CalendarWidget extends FullCalendarWidget
     JS;
     }
 
-
     public function fetchEvents(array $fetchInfo): array
     {
         return MaintenancePreventive::query()
@@ -76,7 +64,7 @@ class CalendarWidget extends FullCalendarWidget
                 fn (MaintenancePreventive $mp) => EventData::make()
                 ->id($mp->id)
                 ->title($mp->equipement->designation . " - " . $mp->statut)
-                ->backgroundColor('transparent') // pour éviter d’écraser via PHP
+                ->backgroundColor('transparent')
                 ->start($mp->date_planifiee)
                 ->end($mp->date_planifiee)
                 ->url(
@@ -95,6 +83,8 @@ class CalendarWidget extends FullCalendarWidget
         return true;
     }
 
+
+
     public function config(): array
     {
         return [
@@ -104,19 +94,15 @@ class CalendarWidget extends FullCalendarWidget
                 'center' => 'title',
                 'right' => 'prev,next today',
             ],
-            // Ne pas afficher l'heure dans les événements
             'eventTimeFormat' => [
                 'hour' => '2-digit',
                 'minute' => '2-digit',
                 'meridiem' => false,
                 'hour12' => false,
             ],
-            // Facultatif : supprimer complètement l'heure en ne la formatant pas du tout
             'displayEventTime' => false,
         ];
     }
-
-
 
 
 }

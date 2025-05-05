@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Carbon\Carbon;
 
 class EquipementResource extends Resource
 {
@@ -119,18 +120,22 @@ class EquipementResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('bloc.nom_bloc')
-                    ->sortable()
+                    ->getStateUsing(fn ($record) => $record->bloc->nom_bloc. ' - ' . $record->bloc->typeBloc->nom)
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('designation')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('marque')
-                    ->searchable(),
-
                 Tables\Columns\TextColumn::make('modele')
                     ->searchable()
                     ->toggleable(),
+
+                Tables\Columns\TextColumn::make('bloc.localisation')
+                    ->label('localisation')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('marque')
+                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('numero_serie')
                     ->searchable()
@@ -148,12 +153,28 @@ class EquipementResource extends Resource
 
                 Tables\Columns\TextColumn::make('etat')
                     ->badge()
-                    ->color(function ($state) {
+                    ->color(function ($state, $record) {
+                        // Récupérer les maintenances préventives liées
+                        $maintenances = $record->maintenancePreventives;
+
+                        // Date d'aujourd'hui
+                        $today = Carbon::now()->toDateString();
+
+                        foreach ($maintenances as $mp) {
+                            if ($mp->date_planifiee && Carbon::parse($mp->date_planifiee)->toDateString() === $today) {
+                                // Mettre à jour l'état uniquement s'il n'est pas déjà à 'hors_service'
+                                if ($record->etat !== 'hors_service') {
+                                    $record->update(['etat' => 'hors_service']);
+                                }
+
+                                $state = 'hors_service'; // Forcer l'affichage aussi
+                                break;
+                            }
+                        }
+
                         return match ($state) {
-                            'bon' => 'success',
-                            'acceptable' => 'warning',
-                            'mauvais' => 'danger',
-                            'hors_service' => 'danger',
+                            'bon', 'acceptable' => 'success',
+                            'mauvais', 'hors_service' => 'danger',
                             default => 'gray',
                         };
                     }),

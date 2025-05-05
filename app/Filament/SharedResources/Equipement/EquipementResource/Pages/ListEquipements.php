@@ -10,6 +10,7 @@ class ListEquipements extends ListRecords
 {
     protected static string $resource = EquipementResource::class;
 
+
     protected function getHeaderActions(): array
     {
         return [
@@ -17,4 +18,3 @@ class ListEquipements extends ListRecords
         ];
     }
 }
-

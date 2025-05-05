@@ -32,16 +32,14 @@ class MaintenancePreventiveResource extends Resource
                     ->required()
                     ->searchable()
                     ->preload()
-                    ->label('Équipement concerné'),
+                    ->label('Équipement concerné')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->designation . ' - ' . $record->modele),
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload()
                     ->label('Technicien responsable')
-                    ->options(function () {
-                        return \App\Models\User::where('role', 'technicien')
-                            ->pluck('name', 'id');
-                    }),
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . '  ' . $record->prenom),
                 Forms\Components\DatePicker::make('date_planifiee')
                     ->required()
                     ->minDate(now())
@@ -50,6 +48,7 @@ class MaintenancePreventiveResource extends Resource
                     ->minDate(now()),
                 Forms\Components\Select::make('statut')
                     ->required()
+                    ->reactive()
                     ->options([
                         'planifiee' => 'Planifiée',
                         'en_attente' => 'En attente',
@@ -57,6 +56,15 @@ class MaintenancePreventiveResource extends Resource
                         'terminee' => 'Terminée',
                         'reportee' => 'Reportée',
                         'annulee' => 'Annulée',
+                    ]),
+                Forms\Components\Select::make('equipement_etat')
+                    ->label('Etat de l\'equipement')
+                    ->hidden(fn (Forms\Get $get) => in_array($get('statut'), ['planifiee', 'en_attente', 'en_cours']))
+                    ->options([
+                        'bon' => 'Bon',
+                        'acceptable' => 'Acceptable',
+                        'mauvais' => 'Mauvais',
+                        'hors_service' => 'Hors service',
                     ]),
                 Forms\Components\Toggle::make('type_externe')
                     ->label('Type externe ?')
@@ -176,16 +184,23 @@ class MaintenancePreventiveResource extends Resource
                         ->label('Calendrier')
                         ->url(fn () => route('filament.engineer.pages.calendar'))
                         ->icon('heroicon-o-calendar') // optional icon
-                        ->color('primary'), // optional color
+                        ->color('yellow'), // optional color
                 ])
                 ->columns([
                 Tables\Columns\TextColumn::make('equipement.designation')
                     ->label('Équipement')
-                    ->sortable()
-                    ->searchable(),
+                    ->sortable(query: function ($query, $direction) {
+                        return $query->orderBy('equipement.designation', $direction);
+                    })
+                    ->searchable()
+                    ->getStateUsing(fn ($record) => $record->equipement?->designation . ' - ' . $record->equipement?->modele),
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Technicien')
                     ->sortable()
+                    ->sortable(query: function ($query, $direction) {
+                        return $query->orderBy('user.name', $direction);
+                    })
+                    ->getStateUsing(fn ($record) => isset($record->user) ? $record->user?->name . '  ' . $record->user?->prenom : 'non spécifié')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('date_planifiee')
                     ->date()
@@ -205,7 +220,6 @@ class MaintenancePreventiveResource extends Resource
                         'reportee' => 'gray',
                         'annulee' => 'danger',
                     }),
-
                 Tables\Columns\IconColumn::make('type_externe')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('fournisseur'),

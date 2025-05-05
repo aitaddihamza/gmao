@@ -25,6 +25,12 @@ return new class () extends Migration {
             $table->integer('detectabilite')->nullable();
             $table->string('type_ticket');
             $table->string('chemin_image')->nullable();
+            // resent fields
+            $table->text('solution')->nullable();
+            $table->text('diagnostic')->nullable();
+            $table->date('date_resolution')->nullable();
+            $table->date('date_intervention')->nullable();
+            $table->integer('temps_arret')->nullable();
             $table->timestamps();
         });
     }

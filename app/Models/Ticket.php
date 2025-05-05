@@ -19,9 +19,6 @@ class Ticket extends Model
         'priorite',
         'description',
         'chemin_image',
-        'gravite_panne',
-        'frequence_occurrence',
-        'detectabilite',
         'date_attribution',
         'date_cloture',
     ];

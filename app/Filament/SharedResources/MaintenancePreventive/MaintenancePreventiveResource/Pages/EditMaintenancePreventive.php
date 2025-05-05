@@ -20,6 +20,7 @@ class EditMaintenancePreventive extends EditRecord
 
     protected function getHeaderActions(): array
     {
+        // dd($this->getRecord()->equipement->etat);
         return [
             Actions\DeleteAction::make(),
         ];
@@ -118,6 +119,13 @@ class EditMaintenancePreventive extends EditRecord
                         ->icon('heroicon-o-eye'),
                 ])
                 ->sendToDatabase($technicienResponsable);
+        }
+
+
+        $equipement = $this->getRecord()->equipement;
+        $equipementEtat = $this->data['equipement_etat'];
+        if ($equipementEtat) {
+            $equipement->update(['etat' => $equipementEtat]);
         }
 
     }

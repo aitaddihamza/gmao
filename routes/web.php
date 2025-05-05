@@ -6,19 +6,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     if (auth()->check()) {
-        $userRole = auth()->user()->role;
-        $userRole = $userRole === 'ingenieur' ? 'engineer' : $userRole;
-        return redirect()->route("filament.{$userRole}.pages.dashboard");
+        return redirect()->route('filament.'. auth()->user()->role.'.pages.dashboard');
     }
-    return redirect(route('login'));
+    return redirect('/login');
 });
 
-
-
 Route::get('/dashboard', function () {
-    $userRole = auth()->user()->role;
-    $userRole = $userRole === 'ingenieur' ? 'engineer' : $userRole;
-    return redirect()->route("filament.{$userRole}.pages.dashboard");
+    return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
