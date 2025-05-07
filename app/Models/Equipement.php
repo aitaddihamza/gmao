@@ -32,7 +32,8 @@ class Equipement extends Model
         'sous_contrat',
         'type_contrat',
         'numero_contrat',
-        'criticite'
+        'criticite',
+        'manuel_path'
     ];
 
     protected $casts = [

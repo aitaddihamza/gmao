@@ -113,6 +113,14 @@ class EquipementResource extends Resource
             Forms\Components\TextInput::make('numero_contrat')
                 ->maxLength(255)
                 ->hidden(fn (Forms\Get $get) => !$get('sous_contrat')),
+
+            Forms\Components\FileUpload::make('manuel_path')
+                ->label('Manuel d\'utilisation')
+                ->directory('manuels')
+                ->acceptedFileTypes(['application/pdf'])
+                ->downloadable()
+                ->openable()
+                ->columnSpanFull(),
         ]);
     }
 

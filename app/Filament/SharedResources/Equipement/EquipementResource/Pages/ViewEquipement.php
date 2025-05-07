@@ -7,6 +7,7 @@ use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
+use Illuminate\Support\Facades\Storage;
 
 class ViewEquipement extends ViewRecord
 {
@@ -81,6 +82,19 @@ class ViewEquipement extends ViewRecord
                         Infolists\Components\TextEntry::make('contact_fournisseur')
                             ->label('Contact fournisseur'),
                     ])->columns(2),
+
+                Infolists\Components\Section::make('Manuel d\'utilisation')
+                    ->schema([
+                        Infolists\Components\Actions::make([
+                            Infolists\Components\Actions\Action::make('view_manuel')
+                                ->label('Voir le manuel')
+                                ->icon('heroicon-o-document-text')
+                                ->url(fn ($record) => $record->manuel_path ? Storage::url($record->manuel_path) : null)
+                                ->visible(fn ($record) => $record->manuel_path !== null)
+                                ->color('primary')
+                                ->button(),
+                        ]),
+                    ]),
             ]);
     }
 }

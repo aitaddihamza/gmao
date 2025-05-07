@@ -20,6 +20,7 @@ class Piece extends Model
         'quantite_stock',
         'fournisseur',
         'prix_unitaire',
+        'manuel_path',
     ];
 
     protected $casts = [

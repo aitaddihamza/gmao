@@ -134,7 +134,7 @@ class EditTicket extends EditRecord
             $equipement = $ticket->equipement;
             // notifier tous les utilisateurs n'import qeul role par ce panne de ce équipement
             foreach (User::all() as $user) {
-                if ($user->role == 'admin' || $user->id == auth()->user()->id) {
+                if ($user->role == 'admin' || $user->id == auth()->user()->id || $assignee->id == $user->id) {
                     continue;
                 }
                 Notification::make()

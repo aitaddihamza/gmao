@@ -89,6 +89,7 @@ class TicketResource extends Resource
                             ->default(now()),
                         Forms\Components\DateTimePicker::make('date_resolution')
                             ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif')
+                            ->required()
                             ->default(now()),
                         Forms\Components\Toggle::make('type_externe')
                             ->label('Intervention est externe ?')

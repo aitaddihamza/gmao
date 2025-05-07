@@ -38,6 +38,14 @@ class PieceResource extends Resource
                 Forms\Components\TextInput::make('prix_unitaire')
                     ->required()
                     ->numeric(),
+
+                Forms\Components\FileUpload::make('manuel_path')
+                    ->label('Manuel d\'utilisation')
+                    ->directory('manuels-pieces')
+                    ->acceptedFileTypes(['application/pdf'])
+                    ->downloadable()
+                    ->openable()
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -70,6 +78,7 @@ class PieceResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -93,6 +102,7 @@ class PieceResource extends Resource
             'index' => Pages\ListPieces::route('/'),
             'create' => Pages\CreatePiece::route('/create'),
             'edit' => Pages\EditPiece::route('/{record}/edit'),
+            'view' => Pages\ViewPiece::route('/{record}'),
         ];
     }
 }
