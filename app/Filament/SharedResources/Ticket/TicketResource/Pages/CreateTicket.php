@@ -68,6 +68,22 @@ class CreateTicket extends CreateRecord
             $equipement = $ticket->equipement;
             $equipement->update(['etat' => 'hors_service']);
             // dd($equipement);
+            // notifier tous les utilisateurs n'import qeul role par ce panne de ce équipement
+            foreach (User::all() as $user) {
+                if ($user->role == 'admin' || $user->id == auth()->user()->id) {
+                    continue;
+                }
+                Notification::make()
+                    ->title('Équipement Hors Service')
+                    ->body("L'équipement {$equipement->designation} est hors service.")
+                    ->success()
+                    ->actions([
+                        Action::make('Voir l\'Équipement')
+                            ->url(route('filament.' . $user->role . '.resources.equipements.view', $equipement->id))
+                            ->icon('heroicon-o-eye'),
+                    ])
+                    ->sendToDatabase($user);
+            }
         }
     }
 

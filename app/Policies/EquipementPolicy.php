@@ -17,7 +17,6 @@ class EquipementPolicy
     }
 
 
-
     /**
      * Détermine si l'utilisateur peut modifier un équipement
      * Seuls les majeurs et les ingénieurs peuvent modifier

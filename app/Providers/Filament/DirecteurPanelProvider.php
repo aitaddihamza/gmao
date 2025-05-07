@@ -31,6 +31,7 @@ class DirecteurPanelProvider extends PanelProvider
                     ->selectable()
                     ->editable()
             ])
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::Amber,
             ])
