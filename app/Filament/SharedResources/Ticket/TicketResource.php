@@ -209,6 +209,16 @@ class TicketResource extends Resource
                                         ->label('Générer par AI')
                                         ->icon('heroicon-m-sparkles')
                                         ->button()
+                                        ->disabled(function ($record) {
+                                            if (!isset($record->createur)) {
+                                                return false;
+                                            } elseif ($record->createur->id == auth()->user()->id) {
+                                                return false;
+                                            } elseif (isset($record->assignee)) {
+                                                return $record->assignee->id != auth()->user()->id;
+                                            }
+                                            return true;
+                                        })
                                         ->action(function (Forms\Get $get, Forms\Set $set, AIService $aiService) {
                                             $description = $get('description');
                                             $equipmentId = $get('equipement_id');

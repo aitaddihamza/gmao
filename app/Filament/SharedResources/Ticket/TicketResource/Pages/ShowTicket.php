@@ -50,6 +50,12 @@ class ShowTicket extends ViewRecord
                             ->columnSpanFull(),
                     ]),
 
+                Section::make('Recommandations assisté par AI ')
+                    ->schema([
+                        TextEntry::make('recommandations')
+                            ->label('')
+                            ->columnSpanFull(),
+                    ]),
                 Section::make('Assignation')
                     ->schema([
                         TextEntry::make('createur.name')
