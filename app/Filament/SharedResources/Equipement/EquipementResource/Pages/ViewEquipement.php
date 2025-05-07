@@ -13,12 +13,6 @@ class ViewEquipement extends ViewRecord
 {
     protected static string $resource = EquipementResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\EditAction::make(),
-        ];
-    }
 
     public function infolist(Infolist $infolist): Infolist
     {
@@ -97,4 +91,20 @@ class ViewEquipement extends ViewRecord
                     ]),
             ]);
     }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\EditAction::make(),
+            // close action
+            Actions\Action::make('close')
+                ->label('Fermer')
+                // filament.technicien.resources.maintenance-correctives.index
+                ->url(route('filament.' . auth()->user()->role . '.resources.maintenance-correctives.index'))
+                ->icon('heroicon-o-x-circle')
+                ->color('danger')
+        ];
+    }
+
+
 }

@@ -3,7 +3,6 @@
 namespace App\Filament\SharedResources\Ticket\TicketResource\Pages;
 
 use App\Filament\SharedResources\Ticket\TicketResource;
-use Filament\Pages\Actions\Action;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Infolists\Infolist;
 use Filament\Infolists\Components\Section;
@@ -11,6 +10,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\ImageEntry;
 use Carbon\Carbon;
+use Filament\Actions;
 
 class ShowTicket extends ViewRecord
 {
@@ -145,12 +145,14 @@ class ShowTicket extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('Fermer')
-                ->url(route('filament.'. auth()->user()->role .'.resources.maintenance-correctives.index'))
-                ->icon('heroicon-o-x-mark')
-                ->color('warning')
-                ->button()
-                ->size('lg'),
+            Actions\EditAction::make(),
+            // close action
+            Actions\Action::make('close')
+                ->label('Fermer')
+                // filament.technicien.resources.maintenance-correctives.index
+                ->url(route('filament.' . auth()->user()->role . '.resources.maintenance-correctives.index'))
+                ->icon('heroicon-o-x-circle')
+                ->color('danger')
         ];
     }
 }
