@@ -19,6 +19,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Http\Middleware\ResponsableAccess;
+use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 
 class ResponsablePanelProvider extends PanelProvider
 {
@@ -28,6 +29,10 @@ class ResponsablePanelProvider extends PanelProvider
             ->id('responsable')
             ->path('responsable')
             ->brandName('GMAO')
+            ->plugins([FilamentFullCalendarPlugin::make()
+                    ->selectable()
+                    ->editable()
+            ])
             ->colors([
                 'primary' => Color::Teal,
             ])
@@ -35,11 +40,14 @@ class ResponsablePanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/SharedResources/Ticket'), for: 'App\\Filament\\SharedResources\\Ticket')
             ->discoverResources(in: app_path('Filament/SharedResources/Piece'), for: 'App\\Filament\\SharedResources\\Piece')
             ->discoverResources(in: app_path('Filament/SharedResources/Bloc'), for: 'App\\Filament\\SharedResources\\Bloc')
+            ->discoverResources(in: app_path('Filament/SharedResources/MaintenancePreventive'), for: 'App\\Filament\\SharedResources\\MaintenancePreventive')
             ->discoverPages(in: app_path('Filament/Responsable/Pages'), for: 'App\\Filament\\Responsable\\Pages')
+            ->discoverPages(in: app_path('Filament/SharedPages/Pages'), for: 'App\\Filament\\SharedPages\\Pages')
             ->discoverResources(in: app_path('Filament/SharedResources/Equipement'), for: 'App\\Filament\\SharedResources\\Equipement')
             ->pages([
                 // Pages\Dashboard::class,
             ])
+            ->discoverWidgets(in: app_path('Filament/SharedWidgets/Widgets'), for: 'App\\Filament\\SharedWidgets\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,

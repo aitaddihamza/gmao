@@ -3,7 +3,6 @@
 namespace App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventiveResource\Pages;
 
 use App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventiveResource;
-use App\Models\MaintenancePreventive;
 use App\Models\Piece;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;

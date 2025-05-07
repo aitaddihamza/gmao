@@ -182,7 +182,7 @@ class MaintenancePreventiveResource extends Resource
                 ->headerActions([
                     Action::make('calendrier')
                         ->label('Calendrier')
-                        ->url(fn () => route('filament.engineer.pages.calendar'))
+                        ->url(fn () => route(auth()->user()->role == 'ingenieur' ? 'filament.engineer.pages.calendar' : 'filament.'. auth()->user()->role .'.pages.calendar'))
                         ->icon('heroicon-o-calendar') // optional icon
                         ->color('yellow'), // optional color
                 ])

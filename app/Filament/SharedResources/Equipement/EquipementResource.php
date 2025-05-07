@@ -156,7 +156,6 @@ class EquipementResource extends Resource
                     ->color(function ($state, $record) {
                         // Récupérer les maintenances préventives liées
                         $maintenances = $record->maintenancePreventives;
-
                         // Date d'aujourd'hui
                         $today = Carbon::now()->toDateString();
 

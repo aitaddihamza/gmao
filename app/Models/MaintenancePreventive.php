@@ -53,6 +53,11 @@ class MaintenancePreventive extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id')
+                    ->where('role', '!=', 'admin')
+                    ->where('role', '!=', 'chef')
+                    ->where('role', '!=', 'responsable')
+                    ->where('role', '!=', 'majeur')
+                    ->where('role', '!=', 'directeur');
     }
 }

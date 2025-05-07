@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use App\Models\MaintenancePreventivePiece;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\MaintenanceCorrectivePiece;
 
 class Piece extends Model
 {
@@ -36,7 +37,7 @@ class Piece extends Model
 
     public function maintenanceCorrectives(): BelongsToMany
     {
-        return $this->belongsToMany(MaintenanceCorrective::class, 'interventions_pieces', 'piece_id', 'maintenance_corr_id')
+        return $this->belongsToMany(MaintenanceCorrectivePiece::class, 'interventions_pieces', 'piece_id', 'maintenance_corr_id')
             ->withPivot('quantite_utilisee')
             ->withTimestamps();
     }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Ticket extends Model
 {
@@ -21,6 +22,12 @@ class Ticket extends Model
         'chemin_image',
         'date_attribution',
         'date_cloture',
+        'solution',
+        'diagnostic',
+        'date_resolution',
+        'date_intervention',
+        'type_externe',
+        'temps_arret'
     ];
 
     protected $casts = [
@@ -43,7 +50,7 @@ class Ticket extends Model
 
     public function assignee(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_assignee_id');
+        return $this->belongsto(user::class, 'user_assignee_id')->where('role', '=', 'technicien');
     }
 
     // Scopes utiles
@@ -62,4 +69,14 @@ class Ticket extends Model
     {
         return $this->gravite_panne * $this->frequence_occurrence * $this->detectabilite;
     }
+
+
+    public function pieces(): BelongsToMany
+    {
+        return $this->belongsToMany(Piece::class, 'interventions_pieces', 'maintenance_corr_id', 'piece_id')
+                    ->withPivot('quantite_utilisee')
+                    ->using(MaintenanceCorrectivePiece::class)
+                    ->withTimestamps();
+    }
+
 }

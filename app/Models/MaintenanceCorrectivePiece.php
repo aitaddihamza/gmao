@@ -4,25 +4,24 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use App\Models\Piece;
-use App\Models\MaintenancePreventive;
+use App\Models\Ticket;
 
-class MaintenancePreventivePiece extends Pivot
+class MaintenanceCorrectivePiece extends Pivot
 {
     protected $table = 'interventions_pieces';
     protected $fillable = [
-        'maintenance_prev_id',
+        'maintenance_corr_id',
         'piece_id',
         'quantite_utilisee'
     ];
 
-    // App\Models\InterventionPiece.php (si vous avez un modèle pivot)
     public function piece()
     {
         return $this->belongsTo(Piece::class, 'piece_id');
     }
 
-    public function maintenancePreventive()
+    public function maintenanceCorrective()
     {
-        return $this->belongsTo(MaintenancePreventive::class, 'maintenance_prev_id');
+        return $this->belongsTo(Ticket::class, 'maintenance_corr_id');
     }
-}
+};
