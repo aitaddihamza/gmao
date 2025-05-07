@@ -24,7 +24,7 @@ class TicketResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('equipement_id')
                             ->relationship('equipement', 'designation')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->designation . ' - ' . $record->modele)
+                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->designation . ' - ' . $record->modele . ' - ' .  $record->marque  . ' - '. $record->bloc->localisation)
                             ->required()
                             ->searchable()
                             ->preload()
@@ -64,6 +64,7 @@ class TicketResource extends Resource
                         Forms\Components\Select::make('equipement_etat')
                             ->label('Etat de l\'equipement')
                             ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif')
+                            ->required()
                             ->options([
                                 'bon' => 'Bon',
                                 'acceptable' => 'Acceptable',
@@ -191,6 +192,7 @@ class TicketResource extends Resource
                             ->columnSpanFull(),
 
                         Forms\Components\FileUpload::make('chemin_image')
+                            ->label('image de pannne')
                             ->image()
                             ->multiple()
                             ->maxFiles(5)
@@ -207,6 +209,7 @@ class TicketResource extends Resource
                         Forms\Components\Select::make('user_assignee_id')
                             ->label('Technicien assigné')
                             ->relationship('assignee', 'name')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . '  ' . $record->prenom)
                             ->searchable()
                             ->preload()
                             ->visible(fn (Forms\Get $get): bool =>
@@ -235,8 +238,7 @@ class TicketResource extends Resource
                     })
                     ->searchable()
                     ->getStateUsing(fn ($record) => $record->equipement?->designation . ' - ' . $record->equipement?->modele)
-                    ->label('Équipement concerné')
-                    ->url(fn ($record) => route('filament.engineer.resources.tickets.show', $record->id)),
+                    ->label('Équipement concerné'),
 
                 Tables\Columns\TextColumn::make('createur.name')
                     ->label('Créé par')
@@ -251,6 +253,10 @@ class TicketResource extends Resource
                     })
                     ->getStateUsing(fn ($record) => isset($record->assignee) ? $record->assignee?->name . '  ' . $record->assignee?->prenom : 'non spécifié'),
 
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Date de création')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('priorite')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -292,12 +298,15 @@ class TicketResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
+            ->defaultSort('updated_at', 'desc')
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
+
+
 
     public static function getPages(): array
     {

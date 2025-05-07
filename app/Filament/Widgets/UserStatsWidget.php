@@ -19,7 +19,7 @@ class UserStatsWidget extends BaseWidget
                 ->color('warning')
                 ->chart([7, 3, 4, 5, 6, 3, 5]),
 
-            Stat::make('Ingénieurs', User::where('role', 'ingenieur')->count())
+            Stat::make('Ingénieurs', User::where('role', 'engineer')->count())
                 ->description('Utilisateurs avec rôle ingénieur')
                 ->descriptionIcon('heroicon-m-academic-cap')
                 ->color('success')
@@ -37,11 +37,12 @@ class UserStatsWidget extends BaseWidget
                 ->color('danger')
                 ->chart([1, 1, 1, 1, 2, 1, 1]),
 
-            Stat::make('Directeurs', User::where('role', 'chef')->count())
+            Stat::make('Directeurs', User::where('role', 'directeur')->count())
                 ->description('Utilisateurs avec rôle directeur')
                 ->descriptionIcon('heroicon-m-building-library')
                 ->color('primary')
                 ->chart([1, 1, 1, 1, 1, 1, 1]),
         ];
     }
-} 
+}
+

@@ -41,8 +41,8 @@ class UserResource extends Resource
                 Forms\Components\Select::make('role')
                     ->options([
                         'technicien' => 'Technicien',
-                        'ingenieur' => 'Ingénieur',
-                        'chef' => 'Directeur',
+                        'engineer' => 'Ingénieur',
+                        'directeur' => 'Directeur',
                         'majeur' => 'Majeur',
                         'responsable' => 'Responsable',
                     ])
@@ -87,8 +87,8 @@ class UserResource extends Resource
                     ->label('Rôle')
                     ->options([
                         'technicien' => 'Technicien',
-                        'ingenieur' => 'Ingénieur',
-                        'chef' => 'Directeur',
+                        'engineer' => 'Ingénieur',
+                        'directeur' => 'Directeur',
                         'majeur' => 'Majeur',
                         'responsable' => 'Responsable',
                     ])

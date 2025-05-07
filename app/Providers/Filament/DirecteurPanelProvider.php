@@ -18,6 +18,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 
 class DirecteurPanelProvider extends PanelProvider
 {
@@ -26,6 +27,10 @@ class DirecteurPanelProvider extends PanelProvider
         return $panel
             ->id('directeur')
             ->path('directeur')
+            ->plugins([FilamentFullCalendarPlugin::make()
+                    ->selectable()
+                    ->editable()
+            ])
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -38,6 +43,11 @@ class DirecteurPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/SharedResources/TypeEquipement'), for: 'App\\Filament\\SharedResources\\TypeEquipement')
             ->discoverResources(in: app_path('Filament/SharedResources/Bloc'), for: 'App\\Filament\\SharedResources\\Bloc')
             ->discoverResources(in: app_path('Filament/SharedResources/TypeBloc'), for: 'App\\Filament\\SharedResources\\TypeBloc')
+            ->discoverResources(in: app_path('Filament/SharedResources/MaintenancePreventive'), for: 'App\\Filament\\SharedResources\\MaintenancePreventive')
+            ->discoverResources(in: app_path('Filament/SharedResources/MaintenanceCorrective'), for: 'App\\Filament\\SharedResources\\MaintenanceCorrective')
+            ->discoverWidgets(in: app_path('Filament/Majeur/Widgets'), for: 'App\\Filament\\Majeur\\Widgets')
+            ->discoverPages(in: app_path('Filament/SharedPages/Pages'), for: 'App\\Filament\\SharedPages\\Pages')
+            ->discoverPages(in: app_path('Filament/SharedPages/Pages'), for: 'App\\Filament\\SharedPages\\Pages')
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,

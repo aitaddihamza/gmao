@@ -68,8 +68,7 @@ class CalendarWidget extends FullCalendarWidget
                 ->start($mp->date_planifiee)
                 ->end($mp->date_planifiee)
                 ->url(
-                    url: MaintenancePreventiveResource::getUrl(name: 'view', parameters: ['record' => $mp]),
-                    shouldOpenUrlInNewTab: true
+                    url: MaintenancePreventiveResource::getUrl(name: 'view', parameters: ['record' => $mp])
                 )
                 ->extendedProps([
                     'statut' => $mp->statut,

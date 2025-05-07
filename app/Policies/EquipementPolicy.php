@@ -24,7 +24,7 @@ class EquipementPolicy
      */
     public function edit(User $user, Equipement $equipement): bool
     {
-        return $user->role === 'majeur' || $user->role === 'ingenieur';
+        return $user->role === 'majeur' || $user->role === 'engineer';
     }
 
     /**
@@ -33,7 +33,7 @@ class EquipementPolicy
      */
     public function delete(User $user, Equipement $equipement): bool
     {
-         return $user->role === 'majeur' || $user->role === 'ingenieur' || $user->role == 'chef';
+        return $user->role === 'majeur' || $user->role === 'engineer' || $user->role == 'chef';
     }
 
     /**
@@ -43,11 +43,11 @@ class EquipementPolicy
 
     public function create(User $user): bool
     {
-        return $user->role === 'majeur' || $user->role === 'ingenieur' || $user->role == 'chef';
+        return $user->role === 'majeur' || $user->role === 'engineer' || $user->role == 'chef';
     }
 
     public function update(User $user, Equipement $equipement): bool
     {
-        return $user->role === 'majeur' || $user->role === 'ingenieur' || $user->role == 'chef';
+        return $user->role === 'majeur' || $user->role === 'engineer' || $user->role == 'chef';
     }
 }

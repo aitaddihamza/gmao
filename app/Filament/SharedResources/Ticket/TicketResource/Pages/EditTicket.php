@@ -42,16 +42,15 @@ class EditTicket extends EditRecord
         if ($ticket->user_assignee_id) {
             $assignee = User::find($ticket->user_assignee_id);
             $userRole = $assignee->role;
-            $userRole = $assignee->role == "ingenieur" ? "engineer" : $userRole;
             $url = route("filament.".$userRole.".resources.tickets.show", $ticket->id);
 
             if ($assignee) {
                 Notification::make()
-                    ->title('Ticket Assigned')
-                    ->body("You have been assigned to ticket ID: {$ticket->id} for equipment {$ticket->equipement->designation}.")
+                    ->title('Ticket Assigné')
+                    ->body("Vous avez été assigné au ticket ID: {$ticket->id} pour l'équipement {$ticket->equipement->designation}.")
                     ->success()
                     ->actions([
-                        Action::make('View Ticket')
+                        Action::make('Voir le Ticket')
                             ->url($url)
                             ->icon('heroicon-o-eye'),
                     ])
@@ -113,12 +112,12 @@ class EditTicket extends EditRecord
         $technicienResponsable = User::find($this->getRecord()->user_id);
         if (isset($technicienResponsable)) {
             Notification::make()
-                ->title('Maintenace Preventive Planifié')
-                ->body("vous êtes affécté à un nouveau maintenance préventive Planifié ")
+                ->title('Maintenance Préventive Planifiée')
+                ->body("Vous êtes affecté à une nouvelle maintenance préventive planifiée")
                 ->success()
                 ->actions([
-                    Action::make('Voir+')
-                        ->url('filament.technicien.resources.maintenance-preventive.view', $this->getRecord()->id)
+                    Action::make('Voir plus')
+                        ->url(route('filament.'.$technicienResponsable->role.'.resources.maintenance-preventive.view', $this->getRecord()->id))
                         ->icon('heroicon-o-eye'),
                 ])
                 ->sendToDatabase($technicienResponsable);

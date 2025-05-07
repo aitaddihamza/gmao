@@ -15,7 +15,7 @@ class EngineerAccess
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || auth()->user()->role !== 'ingenieur') {
+        if (!auth()->check() || auth()->user()->role !== 'engineer') {
             return redirect()->route('dashboard')->with('error', 'You do not have access to that area.');
         }
 

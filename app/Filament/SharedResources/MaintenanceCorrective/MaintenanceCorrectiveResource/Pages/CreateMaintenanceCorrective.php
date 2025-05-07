@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Engineer\Resources\MaintenanceCorrectiveResource\Pages;
+namespace App\Filament\SharedResources\MaintenanceCorrective\MaintenanceCorrectiveResource\Pages;
 
-use App\Filament\Engineer\Resources\MaintenanceCorrectiveResource;
+use App\Filament\SharedResources\MaintenanceCorrective\MaintenanceCorrectiveResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 

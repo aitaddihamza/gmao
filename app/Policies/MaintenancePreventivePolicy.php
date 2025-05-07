@@ -12,7 +12,7 @@ class MaintenancePreventivePolicy
      */
 
     public const ALLOWED_ROLES = [
-        'ingenieur'
+        'engineer',
     ];
 
     public function __construct()

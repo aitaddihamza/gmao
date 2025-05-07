@@ -33,13 +33,13 @@ class MaintenancePreventiveResource extends Resource
                     ->searchable()
                     ->preload()
                     ->label('Équipement concerné')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->designation . ' - ' . $record->modele),
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->designation . ' - ' . $record->modele . ' - ' . $record->marque . ' - ' . $record->bloc->localisation),
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'name')
                     ->searchable()
                     ->preload()
-                    ->label('Technicien responsable')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . '  ' . $record->prenom),
+                    ->label('Responsable')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . '  ' . $record->prenom . ' - ' . $record->role),
                 Forms\Components\DatePicker::make('date_planifiee')
                     ->required()
                     ->minDate(now())
@@ -182,7 +182,7 @@ class MaintenancePreventiveResource extends Resource
                 ->headerActions([
                     Action::make('calendrier')
                         ->label('Calendrier')
-                        ->url(fn () => route(auth()->user()->role == 'ingenieur' ? 'filament.engineer.pages.calendar' : 'filament.'. auth()->user()->role .'.pages.calendar'))
+                        ->url(fn () => route('filament.'. auth()->user()->role .'.pages.calendar'))
                         ->icon('heroicon-o-calendar') // optional icon
                         ->color('yellow'), // optional color
                 ])
@@ -195,11 +195,11 @@ class MaintenancePreventiveResource extends Resource
                     ->searchable()
                     ->getStateUsing(fn ($record) => $record->equipement?->designation . ' - ' . $record->equipement?->modele),
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('Technicien')
+                    ->label('Responsable')
                     ->sortable(query: function ($query, $direction) {
                         return $query->orderBy('user.name', $direction);
                     })
-                    ->getStateUsing(fn ($record) => isset($record->user) ? $record->user?->name . '  ' . $record->user?->prenom : 'non spécifié')
+                    ->getStateUsing(fn ($record) => isset($record->user) ? $record->user?->name . '  ' . $record->user?->prenom . ' - ' . $record->user?->role : 'non spécifié')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('date_planifiee')
                     ->date()

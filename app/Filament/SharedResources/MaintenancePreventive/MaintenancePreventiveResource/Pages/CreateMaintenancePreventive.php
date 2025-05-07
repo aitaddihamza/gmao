@@ -53,13 +53,14 @@ class CreateMaintenancePreventive extends CreateRecord
 
         $technicienResponsable = User::find($this->getRecord()->user_id);
         if (isset($technicienResponsable)) {
+            $userRole = $technicienResponsable->role;
             Notification::make()
                 ->title('Maintenace Preventive Planifié')
                 ->body("vous êtes affécté à un nouveau maintenance préventive Planifié ")
                 ->success()
                 ->actions([
-                    Action::make('View Ticket')
-                        ->url('filament.technicien.resources.maintenance-preventive.view', $this->getRecord()->id)
+                    Action::make('Voir plus')
+                        ->url(route('filament.'.$userRole.'.resources.maintenance-preventive.view', $this->getRecord()->id))
                         ->icon('heroicon-o-eye'),
                 ])
                 ->sendToDatabase($technicienResponsable);

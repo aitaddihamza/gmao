@@ -26,6 +26,7 @@ class EquipementResource extends Resource
         return $form->schema([
             Forms\Components\Select::make('bloc_id')
                 ->relationship('bloc', 'nom_bloc')
+                ->getOptionLabelFromRecordUsing(fn ($record) => $record->nom_bloc . ' - ' . $record->typeBloc->nom . ' - ' . $record->localisation)
                 ->required()
                 ->searchable()
                 ->preload()

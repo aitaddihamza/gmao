@@ -14,15 +14,15 @@ class UsersChartWidget extends ChartWidget
 
     protected function getData(): array
     {
-        $roles = ['technicien', 'ingenieur', 'responsable', 'majeur', 'chef'];
+        $roles = ['technicien', 'engineer', 'responsable', 'majeur', 'directeur'];
         $currentYear = Carbon::now()->year;
 
         $roleLabels = [
             'technicien' => 'Techniciens',
-            'ingenieur' => 'Ingénieurs',
+            'engineer' => 'Ingénieurs',
             'responsable' => 'Responsables',
             'majeur' => 'Majeurs',
-            'chef' => 'Directeurs'
+            'directeur' => 'Directeurs'
         ];
 
         $usersPerRole = User::whereYear('created_at', $currentYear)
@@ -61,4 +61,4 @@ class UsersChartWidget extends ChartWidget
     {
         return 'bar';
     }
-} 
+}

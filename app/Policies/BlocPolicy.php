@@ -23,7 +23,7 @@ class BlocPolicy
      */
     public function create(User $user): bool
     {
-        return $user->role === 'majeur' || $user->role === 'ingenieur' || $user->role === 'chef';
+        return $user->role === 'majeur' || $user->role === 'engineer' || $user->role === 'chef';
     }
 
     /**
@@ -31,7 +31,7 @@ class BlocPolicy
      */
     public function update(User $user, Bloc $bloc): bool
     {
-        return $user->role === 'majeur' || $user->role === 'ingenieur' || $user->role === 'chef';
+        return $user->role === 'majeur' || $user->role === 'engineer' || $user->role === 'chef';
     }
 
     /**
@@ -39,7 +39,7 @@ class BlocPolicy
      */
     public function delete(User $user, Bloc $bloc): bool
     {
-        return $user->role === 'majeur' || $user->role === 'ingenieur' || $user->role === 'chef';
+        return $user->role === 'majeur' || $user->role === 'engineer' || $user->role === 'chef';
     }
 
     /**
@@ -47,7 +47,7 @@ class BlocPolicy
      */
     public function restore(User $user, Bloc $bloc): bool
     {
-        return $user->role === 'majeur' || $user->role === 'ingenieur' || $user->role === 'chef';
+        return $user->role === 'majeur' || $user->role === 'engineer' || $user->role === 'chef';
     }
 
     /**
@@ -55,6 +55,6 @@ class BlocPolicy
      */
     public function forceDelete(User $user, Bloc $bloc): bool
     {
-        return $user->role === 'majeur' || $user->role === 'ingenieur';
+        return $user->role === 'majeur' || $user->role === 'engineer';
     }
 }

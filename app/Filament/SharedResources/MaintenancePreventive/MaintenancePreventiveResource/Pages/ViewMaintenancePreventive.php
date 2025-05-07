@@ -14,6 +14,13 @@ class ViewMaintenancePreventive extends ViewRecord
     {
         return [
             Actions\EditAction::make(),
+            // close action
+            Actions\Action::make('close')
+                ->label('Fermer')
+                // filament.technicien.resources.maintenance-correctives.index
+                ->url(route('filament.' . auth()->user()->role . '.resources.maintenance-correctives.index'))
+                ->icon('heroicon-o-x-circle')
+                ->color('danger')
         ];
     }
 

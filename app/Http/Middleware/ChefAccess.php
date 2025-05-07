@@ -15,7 +15,7 @@ class ChefAccess
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || auth()->user()->role !== 'chef') {
+        if (!auth()->check() || auth()->user()->role !== 'directeur') {
             return redirect()->route('dashboard')->with('error', 'You do not have access to that area.');
         }
 

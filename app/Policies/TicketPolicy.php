@@ -21,7 +21,7 @@ class TicketPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, ['ingenieur', 'technicien']);
+        return in_array($user->role, ['engineer', 'technicien']);
     }
 
 
