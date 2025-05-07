@@ -10,6 +10,12 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use App\Services\AIService;
+use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Get;
+use Filament\Notifications\Notification;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Actions;
 
 class TicketResource extends Resource
 {
@@ -191,6 +197,62 @@ class TicketResource extends Resource
                             ->required()
                             ->columnSpanFull(),
 
+                        Forms\Components\Grid::make()
+                            ->schema([
+                                Forms\Components\Textarea::make('recommandations')
+                                    ->label('Recommandations')
+                                    ->autosize()
+                                    ->placeholder('Recommandations pour la résolution du problème')
+                                    ->columnSpan(4),
+                                Forms\Components\Actions::make([
+                                    Forms\Components\Actions\Action::make('generateAI')
+                                        ->label('Générer par AI')
+                                        ->icon('heroicon-m-sparkles')
+                                        ->button()
+                                        ->action(function (Forms\Get $get, Forms\Set $set, AIService $aiService) {
+                                            $description = $get('description');
+                                            $equipmentId = $get('equipement_id');
+
+                                            if (!$description || !$equipmentId) {
+                                                Notification::make()
+                                                    ->title('Erreur')
+                                                    ->body('Veuillez remplir la description et sélectionner un équipement')
+                                                    ->danger()
+                                                    ->send();
+                                                return;
+                                            }
+
+                                            $equipment = \App\Models\Equipement::find($equipmentId);
+                                            if (!$equipment) {
+                                                Notification::make()
+                                                    ->title('Erreur')
+                                                    ->body('Équipement non trouvé')
+                                                    ->danger()
+                                                    ->send();
+                                                return;
+                                            }
+
+                                            $recommendations = $aiService->generateRecommendations($description, $equipment->designation);
+
+                                            if ($recommendations) {
+                                                $set('recommandations', $recommendations);
+                                                Notification::make()
+                                                    ->title('Succès')
+                                                    ->body('Les recommandations ont été générées avec succès')
+                                                    ->success()
+                                                    ->send();
+                                            } else {
+                                                Notification::make()
+                                                    ->title('Erreur')
+                                                    ->body('Une erreur est survenue lors de la génération des recommandations')
+                                                    ->danger()
+                                                    ->send();
+                                            }
+                                        })
+                                ])
+                                ->columnSpan(1)
+                            ])
+                            ->columns(4),
                         Forms\Components\FileUpload::make('chemin_image')
                             ->label('image de pannne')
                             ->image()

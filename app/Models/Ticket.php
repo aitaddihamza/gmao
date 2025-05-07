@@ -26,6 +26,7 @@ class Ticket extends Model
         'diagnostic',
         'fournisseur',
         'date_resolution',
+        'recommandations',
         'date_intervention',
         'type_externe',
         'temps_arret'
