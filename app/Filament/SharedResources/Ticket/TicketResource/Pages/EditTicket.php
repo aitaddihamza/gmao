@@ -18,6 +18,8 @@ class EditTicket extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
+        $firstTicket = $this->getRecord()->first();
+        // dd($firstTicket->equipement->etat);
         $record = $this->getRecord();
         $record->load('pieces'); // Load associated pieces
 

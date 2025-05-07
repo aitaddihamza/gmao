@@ -20,6 +20,7 @@ class ListTickets extends ListRecords
 
     protected function getTableActions(): array
     {
+
         return [
             Tables\Actions\ViewAction::make(), // Add the "View" action
             Tables\Actions\EditAction::make(),

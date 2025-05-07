@@ -15,8 +15,8 @@ return new class () extends Migration {
             $table->foreignId('equipement_id')->constrained('equipements')->onDelete('cascade');
             $table->foreignId('user_createur_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('user_assignee_id')->nullable()->constrained('users')->onDelete('cascade');
-            $table->date('date_attribution')->nullable();
-            $table->date('date_cloture')->nullable();
+            $table->dateTime('date_attribution')->nullable();
+            $table->dateTime('date_cloture')->nullable();
             $table->string('priorite');
             $table->text('description');
             $table->string('statut');
@@ -26,8 +26,8 @@ return new class () extends Migration {
             // resent fields
             $table->text('solution')->nullable();
             $table->text('diagnostic')->nullable();
-            $table->date('date_resolution')->nullable();
-            $table->date('date_intervention')->nullable();
+            $table->dateTime('date_resolution')->nullable();
+            $table->dateTime('date_intervention')->nullable();
             $table->integer('temps_arret')->nullable();
             $table->boolean('type_externe')->default(false);
             $table->timestamps();

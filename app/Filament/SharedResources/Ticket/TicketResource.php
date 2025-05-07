@@ -66,11 +66,117 @@ class TicketResource extends Resource
                             ->required()
                             ->default('nouveau')
                             ->live(),
+                    ]),
 
+                Forms\Components\Section::make('Détails du problème')
+                    ->schema([
+                        Forms\Components\Textarea::make('description')
+                            ->required()
+                            ->columnSpanFull(),
+
+                        Forms\Components\Grid::make()
+                            ->schema([
+                                Forms\Components\Textarea::make('recommandations')
+                                    ->label('Recommandations')
+                                    ->autosize()
+                                    ->placeholder('Recommandations pour la résolution du problème')
+                                    ->columnSpan(4),
+                                Forms\Components\Actions::make([
+                                    Forms\Components\Actions\Action::make('generateAI')
+                                        ->label('Générer par AI')
+                                        ->icon('heroicon-m-sparkles')
+                                        ->button()
+                                        ->disabled(function ($record) {
+                                            if (!isset($record->createur)) {
+                                                return false;
+                                            } elseif ($record->createur->id == auth()->user()->id) {
+                                                return false;
+                                            } elseif (isset($record->assignee)) {
+                                                return $record->assignee->id != auth()->user()->id;
+                                            }
+                                            return true;
+                                        })
+                                        ->action(function (Forms\Get $get, Forms\Set $set, AIService $aiService) {
+                                            $description = $get('description');
+                                            $equipmentId = $get('equipement_id');
+
+                                            if (!$description || !$equipmentId) {
+                                                Notification::make()
+                                                    ->title('Erreur')
+                                                    ->body('Veuillez remplir la description et sélectionner un équipement')
+                                                    ->danger()
+                                                    ->send();
+                                                return;
+                                            }
+
+                                            $equipment = \App\Models\Equipement::find($equipmentId);
+                                            if (!$equipment) {
+                                                Notification::make()
+                                                    ->title('Erreur')
+                                                    ->body('Équipement non trouvé')
+                                                    ->danger()
+                                                    ->send();
+                                                return;
+                                            }
+
+                                            $recommendations = $aiService->generateRecommendations($description, $equipment->designation);
+
+                                            if ($recommendations) {
+                                                $set('recommandations', $recommendations);
+                                                Notification::make()
+                                                    ->title('Succès')
+                                                    ->body('Les recommandations ont été générées avec succès')
+                                                    ->success()
+                                                    ->send();
+                                            } else {
+                                                Notification::make()
+                                                    ->title('Erreur')
+                                                    ->body('Une erreur est survenue lors de la génération des recommandations')
+                                                    ->danger()
+                                                    ->send();
+                                            }
+                                        })
+                                ])
+                                ->columnSpan(1)
+                            ])
+                            ->columns(4),
+                        Forms\Components\FileUpload::make('chemin_image')
+                            ->label('image de pannne')
+                            ->image()
+                            ->multiple()
+                            ->maxFiles(5)
+                            ->directory('tickets')
+                            ->columnSpanFull(),
+                    ]),
+
+                Forms\Components\Section::make('Assignation')
+                    ->schema([
+                        Forms\Components\Hidden::make('user_createur_id')
+                            ->default(fn () => auth()->id())
+                            ->required(),
+
+                        Forms\Components\Select::make('user_assignee_id')
+                            ->label('Technicien assigné')
+                            ->relationship('assignee', 'name')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . '  ' . $record->prenom)
+                            ->searchable()
+                            ->preload()
+                            ->visible(fn (Forms\Get $get): bool =>
+                                in_array($get('statut'), ['attribue', 'en_cours', 'en_attente', 'cloture'])),
+
+                        Forms\Components\DateTimePicker::make('date_attribution')
+                            ->visible(fn (Forms\Get $get): bool =>
+                                in_array($get('statut'), ['attribue', 'en_cours', 'en_attente', 'cloture']))
+                            ->default(now()),
+                    ]),
+
+                Forms\Components\Section::make('Rapport et Résolution')
+                    ->schema([
                         Forms\Components\Select::make('equipement_etat')
                             ->label('Etat de l\'equipement')
                             ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif')
                             ->required()
+                            ->preload()
                             ->options([
                                 'bon' => 'Bon',
                                 'acceptable' => 'Acceptable',
@@ -86,18 +192,31 @@ class TicketResource extends Resource
                             ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif'),
                         Forms\Components\DateTimePicker::make('date_intervention')
                             ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif')
-                            ->default(now()),
+                            ->default(null)
+                            ->seconds(false)
+                            ->displayFormat('d/m/Y H:i')
+                            ->dehydrateStateUsing(fn ($state) => $state ? now()->setTimeFromTimeString($state) : null),
                         Forms\Components\DateTimePicker::make('date_resolution')
                             ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif')
+                            ->label('date de résolution')
                             ->required()
-                            ->default(now()),
+                            ->default(null)
+                            ->seconds(false)
+                            ->displayFormat('d/m/Y H:i')
+                            ->dehydrateStateUsing(fn ($state) => $state ? now()->setTimeFromTimeString($state) : null),
                         Forms\Components\Toggle::make('type_externe')
                             ->label('Intervention est externe ?')
                             ->reactive()
                             ->hidden(fn (Forms\Get $get) => $get('type_ticket') != 'correctif'),
                         Forms\Components\TextInput::make('fournisseur')
                             ->hidden(fn (Forms\Get $get) => !$get('type_externe')),
-
+                        Forms\Components\DateTimePicker::make('date_cloture')
+                            ->visible(fn (Forms\Get $get): bool =>
+                                $get('statut') === 'cloture')
+                            ->default(null)
+                            ->seconds(false)
+                            ->displayFormat('d/m/Y H:i')
+                            ->dehydrateStateUsing(fn ($state) => $state ? now()->setTimeFromTimeString($state) : null),
                         Forms\Components\Repeater::make('pieces_utilisees')
                             ->schema([
                                 Forms\Components\Select::make('piece_id')
@@ -190,114 +309,6 @@ class TicketResource extends Resource
                                 })->toArray());
                             }),
                     ]),
-
-
-                Forms\Components\Section::make('Détails du problème')
-                    ->schema([
-                        Forms\Components\Textarea::make('description')
-                            ->required()
-                            ->columnSpanFull(),
-
-                        Forms\Components\Grid::make()
-                            ->schema([
-                                Forms\Components\Textarea::make('recommandations')
-                                    ->label('Recommandations')
-                                    ->autosize()
-                                    ->placeholder('Recommandations pour la résolution du problème')
-                                    ->columnSpan(4),
-                                Forms\Components\Actions::make([
-                                    Forms\Components\Actions\Action::make('generateAI')
-                                        ->label('Générer par AI')
-                                        ->icon('heroicon-m-sparkles')
-                                        ->button()
-                                        ->disabled(function ($record) {
-                                            if (!isset($record->createur)) {
-                                                return false;
-                                            } elseif ($record->createur->id == auth()->user()->id) {
-                                                return false;
-                                            } elseif (isset($record->assignee)) {
-                                                return $record->assignee->id != auth()->user()->id;
-                                            }
-                                            return true;
-                                        })
-                                        ->action(function (Forms\Get $get, Forms\Set $set, AIService $aiService) {
-                                            $description = $get('description');
-                                            $equipmentId = $get('equipement_id');
-
-                                            if (!$description || !$equipmentId) {
-                                                Notification::make()
-                                                    ->title('Erreur')
-                                                    ->body('Veuillez remplir la description et sélectionner un équipement')
-                                                    ->danger()
-                                                    ->send();
-                                                return;
-                                            }
-
-                                            $equipment = \App\Models\Equipement::find($equipmentId);
-                                            if (!$equipment) {
-                                                Notification::make()
-                                                    ->title('Erreur')
-                                                    ->body('Équipement non trouvé')
-                                                    ->danger()
-                                                    ->send();
-                                                return;
-                                            }
-
-                                            $recommendations = $aiService->generateRecommendations($description, $equipment->designation);
-
-                                            if ($recommendations) {
-                                                $set('recommandations', $recommendations);
-                                                Notification::make()
-                                                    ->title('Succès')
-                                                    ->body('Les recommandations ont été générées avec succès')
-                                                    ->success()
-                                                    ->send();
-                                            } else {
-                                                Notification::make()
-                                                    ->title('Erreur')
-                                                    ->body('Une erreur est survenue lors de la génération des recommandations')
-                                                    ->danger()
-                                                    ->send();
-                                            }
-                                        })
-                                ])
-                                ->columnSpan(1)
-                            ])
-                            ->columns(4),
-                        Forms\Components\FileUpload::make('chemin_image')
-                            ->label('image de pannne')
-                            ->image()
-                            ->multiple()
-                            ->maxFiles(5)
-                            ->directory('tickets')
-                            ->columnSpanFull(),
-                    ]),
-
-                Forms\Components\Section::make('Assignation')
-                    ->schema([
-                    Forms\Components\Hidden::make('user_createur_id')
-                       ->default(fn () => auth()->id())
-                       ->required(),
-
-                        Forms\Components\Select::make('user_assignee_id')
-                            ->label('Technicien assigné')
-                            ->relationship('assignee', 'name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . '  ' . $record->prenom)
-                            ->searchable()
-                            ->preload()
-                            ->visible(fn (Forms\Get $get): bool =>
-                                in_array($get('statut'), ['attribue', 'en_cours', 'en_attente', 'cloture'])),
-
-                        Forms\Components\DateTimePicker::make('date_attribution')
-                            ->visible(fn (Forms\Get $get): bool =>
-                                in_array($get('statut'), ['attribue', 'en_cours', 'en_attente', 'cloture']))
-                            ->default(now()),
-
-                        Forms\Components\DateTimePicker::make('date_cloture')
-                            ->visible(fn (Forms\Get $get): bool =>
-                                $get('statut') === 'cloture')
-                            ->default(now()),
-                    ]),
             ]);
     }
 
@@ -367,7 +378,8 @@ class TicketResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->url(fn (Ticket $record): string => route('filament.'. auth()->user()->role .'.resources.tickets.show', ['record' => $record])),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -378,8 +390,6 @@ class TicketResource extends Resource
                 ]),
             ]);
     }
-
-
 
     public static function getPages(): array
     {

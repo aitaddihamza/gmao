@@ -9,6 +9,8 @@ use Filament\Infolists\Infolist;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\ImageEntry;
+use Carbon\Carbon;
 
 class ShowTicket extends ViewRecord
 {
@@ -21,9 +23,17 @@ class ShowTicket extends ViewRecord
                 Section::make('Informations de base')
                     ->schema([
                         TextEntry::make('equipement.designation')
-                            ->label('Équipement'),
+                            ->label('Équipement')
+                            ->columnSpanFull(),
                         TextEntry::make('type_ticket')
-                            ->label('Type de ticket'),
+                            ->label('Type de ticket')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'correctif' => 'danger',
+                                'installation' => 'success',
+                                'formation' => 'info',
+                                default => 'gray',
+                            }),
                         TextEntry::make('priorite')
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
@@ -41,27 +51,36 @@ class ShowTicket extends ViewRecord
                                 'cloture' => 'success',
                                 default => 'danger',
                             }),
-                    ])->columns(2),
+                    ])->columns(3),
 
                 Section::make('Détails du problème')
                     ->schema([
                         TextEntry::make('description')
                             ->label('Description')
                             ->columnSpanFull(),
+                        ImageEntry::make('chemin_image')
+                            ->label('Images de panne')
+                            ->columnSpanFull()
+                            ->stacked()
+                            ->circular()
+                            ->visible(fn ($record) => $record->chemin_image !== null),
                     ]),
 
-                Section::make('Recommandations assisté par AI ')
+                Section::make('Recommandations assisté par AI')
                     ->schema([
                         TextEntry::make('recommandations')
                             ->label('')
                             ->columnSpanFull(),
                     ]),
+
                 Section::make('Assignation')
                     ->schema([
                         TextEntry::make('createur.name')
-                            ->label('Créé par'),
+                            ->label('Créé par')
+                            ->getStateUsing(fn ($record) => $record->createur?->name . ' ' . $record->createur?->prenom),
                         TextEntry::make('assignee.name')
-                            ->label('Assigné à'),
+                            ->label('Assigné à')
+                            ->getStateUsing(fn ($record) => $record->assignee?->name . ' ' . $record->assignee?->prenom),
                         TextEntry::make('date_attribution')
                             ->label('Date d\'attribution')
                             ->dateTime('d/m/Y H:i'),
@@ -70,7 +89,7 @@ class ShowTicket extends ViewRecord
                             ->dateTime('d/m/Y H:i'),
                     ])->columns(2),
 
-                Section::make('Résolution')
+                Section::make('Rapport et Résolution')
                     ->schema([
                         TextEntry::make('diagnostic')
                             ->label('Diagnostic')
@@ -91,6 +110,16 @@ class ShowTicket extends ViewRecord
                             ->badge()
                             ->formatStateUsing(fn ($state) => $state ? 'Externe' : 'Interne')
                             ->visible(fn ($record) => $record->type_ticket === 'correctif'),
+                        TextEntry::make('temps_arret')
+                            ->label('temps d\'arrêt')
+                            ->getStateUsing(function ($record) {
+                                if ($record->date_intervention && $record->date_resolution) {
+                                    $intervention = Carbon::parse($record->date_intervention);
+                                    $resolution = Carbon::parse($record->date_resolution);
+                                    return $intervention->diffInHours($resolution) . ' heures';
+                                }
+                                return 'Non calculé';
+                            }),
                         TextEntry::make('fournisseur')
                             ->label('Fournisseur')
                             ->visible(fn ($record) => $record->type_ticket === 'correctif' && $record->type_externe),
@@ -116,9 +145,12 @@ class ShowTicket extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('edit')
-                ->url(fn () => route('filament.'.auth()->user()->role.'.resources.tickets.edit', $this->record))
-                ->label('Modifier'),
+            Action::make('Fermer')
+                ->url(route('filament.'. auth()->user()->role .'.resources.maintenance-correctives.index'))
+                ->icon('heroicon-o-x-mark')
+                ->color('warning')
+                ->button()
+                ->size('lg'),
         ];
     }
 }
