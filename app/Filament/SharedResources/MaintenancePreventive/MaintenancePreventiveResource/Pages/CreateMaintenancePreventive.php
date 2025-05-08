@@ -4,7 +4,6 @@ namespace App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventi
 
 use App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventiveResource;
 use App\Models\Piece;
-use App\Models\User;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Notifications\Notification;
 use Filament\Notifications\Actions\Action;

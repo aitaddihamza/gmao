@@ -35,7 +35,10 @@ class EngineerPanelProvider extends PanelProvider
                 ->selectable()
                 ->timezone(config('app.timezone'))
                 ->locale(config('app.locale'))
-                ->config([])
+                ->config([
+                    'eventResizableFromStart' => true, // Permet le redimensionnement depuis le début
+                    'resizable' => true,
+                ])
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('1s')

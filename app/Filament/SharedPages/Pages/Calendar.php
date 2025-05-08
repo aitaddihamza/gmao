@@ -22,18 +22,19 @@ class Calendar extends Page
 
     protected function getHeaderActions(): array
     {
+        return [];
         // engineer role can create maintenance preventive
-        if (auth()->user()->role != "engineer") {
-            return [];
-        }
-        return [
-            Action::make('create')
-                ->label('Planifier')
-                ->icon('heroicon-o-plus')
-                ->url(MaintenancePreventiveResource::getUrl('create'))
-                ->color('primary')
-            ,
-        ];
+        // if (auth()->user()->role != "engineer") {
+        //
+        // }
+        // return [
+        //     Action::make('create')
+        //         ->label('Planifier')
+        //         ->icon('heroicon-o-plus')
+        //         ->url(MaintenancePreventiveResource::getUrl('create'))
+        //         ->color('primary')
+        //     ,
+        // ];
     }
 
 }

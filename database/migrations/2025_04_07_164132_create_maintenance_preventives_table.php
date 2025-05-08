@@ -21,6 +21,10 @@ return new class () extends Migration {
             $table->dateTime('date_fin')->nullable();
             $table->boolean('type_externe')->default(false);
             $table->string('fournisseur')->nullable();
+            $table->string('rapport_path')->nullable();
+            $table->string('rapport_type')->nullable();
+            $table->text('observations')->nullable();
+            $table->text('actions_realisees')->nullable();
             $table->text('remarques')->nullable();
             $table->timestamps();
         });

@@ -9,8 +9,10 @@ use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 use Illuminate\Database\Eloquent\Model;
 use Saade\FilamentFullCalendar\Actions;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Carbon\Carbon;
 use Filament\Notifications\Notification;
+use Filament\Notifications\Actions\Action;
+use Illuminate\Support\Facades\Log;
 
 class CalendarWidget extends FullCalendarWidget
 {
@@ -19,8 +21,57 @@ class CalendarWidget extends FullCalendarWidget
 
     protected function headerActions(): array
     {
+        if (auth()->user()->role != "engineer") {
+            return [];
+        }
         return [
-            //
+            Actions\CreateAction::make()
+                ->label('Planifier')
+                ->icon('heroicon-o-plus')
+                ->mountUsing(
+                    function (Forms\Form $form, array $arguments) {
+                        $form->fill([
+                            'date_debut' => @$arguments['start'] ?? null,
+                            'date_fin' => @$arguments['end'] ?? null,
+                            'description' => null,
+                            'equipement_id' => null,
+                            'user_createur_id' => auth()->id(),
+                            'tyepe_externe' => false,
+                            'statut' => 'planifiee',
+                            'fournisseur' => null,
+                        ]);
+                    }
+                )
+                ->after(function (MaintenancePreventive $record) {
+                    try {
+                        Log::info('Tentative d\'envoi de notification pour la maintenance: ' . $record->id);
+
+                        $technicienResponsable = $record->assignee;
+                        Log::info('Technicien responsable: ' . ($technicienResponsable ? $technicienResponsable->id : 'non assigné'));
+
+                        if ($technicienResponsable) {
+                            $userRole = $technicienResponsable->role;
+                            Log::info('Rôle du technicien: ' . $userRole);
+
+                            $notification = Notification::make()
+                                ->title('Maintenance Preventive Planifiée')
+                                ->body("Vous êtes affecté à une nouvelle maintenance préventive planifiée")
+                                ->success()
+                                ->actions([
+                                    Action::make('Voir plus')
+                                        ->url(route('filament.'.$userRole.'.resources.maintenance-preventive.view', $record->id))
+                                        ->icon('heroicon-o-eye'),
+                                ]);
+
+                            $notification->sendToDatabase($technicienResponsable);
+                            Log::info('Notification envoyée avec succès');
+                        } else {
+                            Log::warning('Aucun technicien assigné pour la maintenance: ' . $record->id);
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
+                    }
+                })
         ];
     }
 
@@ -32,15 +83,49 @@ class CalendarWidget extends FullCalendarWidget
             Forms\Components\DatePicker::make('date_debut')
                 ->label('Date de début')
                 ->required()
-                ->default(fn ($record, array $arguments) => $arguments['event']['start'] ?? $record->date_debut)
+                ->default(fn ($record, array $arguments) => Carbon::parse($arguments['start'])->format('Y-m-d H:i:s') ?? $record->date_debut)
                 ->displayFormat('Y-m-d H:i:s')
                 ->placeholder('Sélectionner une date de début'),
             Forms\Components\DatePicker::make('date_fin')
                 ->label('Date de fin')
                 ->required()
-                ->default(fn ($record, array $arguments) => $arguments['event']['end'] ?? $record->date_fin)
+                ->default(fn ($record, array $arguments) => $arguments['end'] ?? $record->date_fin)
                 ->displayFormat('Y-m-d H:i:s')
                 ->placeholder('Sélectionner une date de fin'),
+            Forms\Components\Select::make('equipement_id')
+                ->relationship('equipement', 'designation')
+                ->required()
+                ->searchable()
+                ->preload()
+                ->label('Équipement concerné')
+                ->getOptionLabelFromRecordUsing(fn ($record) => $record->designation . ' - ' . $record->modele . ' - ' . $record->marque . ' - ' . $record->bloc->localisation),
+            Forms\Components\Hidden::make('user_createur_id')
+                ->default(fn () => auth()->id())
+                ->required(),
+                Forms\Components\Select::make('user_assignee_id')
+                ->relationship('assignee', 'name')
+                ->searchable()
+                ->preload()
+                ->label('Assigné à')
+                ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . ' ' . $record->prenom . ' - ' . $record->role),
+            // toggle for type_externe
+            Forms\Components\Toggle::make('type_externe')
+                ->label('Type externe')
+                ->reactive()
+                ->default(fn ($record) => $record->type_externe ?? false),
+            Forms\Components\TextInput::make('fournisseur')
+                ->maxLength(255)
+                ->required()
+                ->placeholder('Nom du fournisseur')
+                ->hidden(fn (Forms\Get $get) => !$get('type_externe')),
+            Forms\Components\Textarea::make('description')
+                ->label('Description')
+                ->required()
+                ->default(fn ($record) => $record->description ?? '')
+                ->placeholder('Ajouter une description'),
+            // hidden field for statut by default it's planfiee
+            Forms\Components\Hidden::make('statut')
+                ->default('planifiee'),
         ];
     }
 
@@ -51,13 +136,50 @@ class CalendarWidget extends FullCalendarWidget
             // rempli automatiquement les dates par les valeurs de l'événement
             Actions\EditAction::make()
                 ->mountUsing(
-                    function (Forms\Form $form, array $arguments) {
+                    function (Forms\Form $form, array $arguments, MaintenancePreventive $record) {
                         $form->fill([
-                            'date_debut' => $arguments['event']['start'],
-                            'date_fin' => $arguments['event']['end'],
+                            'date_debut' =>  Carbon::parse($arguments['event']['start'])->format('Y-m-d H:i:s'),
+                            'date_fin' => Carbon::parse($arguments['event']['end'])->format('Y-m-d H:i:s'),
+                            'description' => $record->description ?? null,
+                            'equipement_id' => $arguments['event']['equipement_id'] ?? null,
+                            'user_createur_id' => auth()->id(),
+                            'type_externe' => $record->type_externe ?? false,
+                            'statut' => $record->statut ?? 'planifiee',
+                            'fournisseur' => $record->fournisseur ?? null,
+                            'user_assignee_id' => $record->user_assignee_id ?? null,
                         ]);
                     }
-                ),
+                )
+                ->after(function (MaintenancePreventive $record) {
+                    try {
+                        Log::info('Tentative d\'envoi de notification pour la maintenance: ' . $record->id);
+
+                        $technicienResponsable = $record->assignee;
+                        Log::info('Technicien responsable: ' . ($technicienResponsable ? $technicienResponsable->id : 'non assigné'));
+
+                        if ($technicienResponsable) {
+                            $userRole = $technicienResponsable->role;
+                            Log::info('Rôle du technicien: ' . $userRole);
+
+                            $notification = Notification::make()
+                                ->title('Maintenance Preventive Planifiée')
+                                ->body("Vous êtes affecté à une nouvelle maintenance préventive planifiée")
+                                ->success()
+                                ->actions([
+                                    Action::make('Voir plus')
+                                        ->url(route('filament.'.$userRole.'.resources.maintenance-preventive.view', $record->id))
+                                        ->icon('heroicon-o-eye'),
+                                ]);
+
+                            $notification->sendToDatabase($technicienResponsable);
+                            Log::info('Notification envoyée avec succès');
+                        } else {
+                            Log::warning('Aucun technicien assigné pour la maintenance: ' . $record->id);
+                        }
+                    } catch (\Exception $e) {
+                        Log::error('Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
+                    }
+                })
         ];
     }
 
@@ -114,7 +236,7 @@ class CalendarWidget extends FullCalendarWidget
                 ->title($mp->equipement->designation . " - " . $mp->statut)
                 ->backgroundColor('transparent')
                 ->start($mp->date_debut)
-                ->end($mp->date_fin)
+                ->end(Carbon::parse($mp->date_fin)->addHour())
                 ->url(
                     url: MaintenancePreventiveResource::getUrl(name: 'view', parameters: ['record' => $mp])
                 )
@@ -148,47 +270,6 @@ class CalendarWidget extends FullCalendarWidget
             ],
             'editable' => true,
             'selectable' => true,
-            'selectMirror' => true,
-            'select' => 'function(info) {
-                $wire.dispatch("open-modal", { id: "create-maintenance", arguments: { start: info.startStr, end: info.endStr } });
-            }',
         ];
-    }
-
-    protected function getCreateFormSchema(): array
-    {
-        return [
-            Forms\Components\Select::make('equipement_id')
-                ->relationship('equipement', 'designation')
-                ->required()
-                ->label('Équipement'),
-            Forms\Components\DatePicker::make('date_debut')
-                ->required()
-                ->label('Date de début'),
-            Forms\Components\DatePicker::make('date_fin')
-                ->required()
-                ->label('Date de fin'),
-            Forms\Components\Textarea::make('description')
-                ->required()
-                ->label('Description'),
-            Forms\Components\Hidden::make('statut')
-                ->default('planifiee'),
-            Forms\Components\Hidden::make('user_createur_id')
-                ->default(fn () => auth()->id()),
-        ];
-    }
-
-    public function create(): void
-    {
-        $data = $this->form->getState();
-        
-        $maintenance = MaintenancePreventive::create($data);
-
-        Notification::make()
-            ->title('Maintenance préventive créée avec succès')
-            ->success()
-            ->send();
-
-        $this->dispatch('refresh-calendar');
     }
 }
