@@ -34,18 +34,22 @@ class MaintenancePreventiveResource extends Resource
                     ->preload()
                     ->label('Équipement concerné')
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record->designation . ' - ' . $record->modele . ' - ' . $record->marque . ' - ' . $record->bloc->localisation),
-                Forms\Components\Select::make('user_id')
-                    ->relationship('user', 'name')
+                Forms\Components\Hidden::make('user_createur_id')
+                    ->default(fn () => auth()->id())
+                    ->required(),
+                    Forms\Components\Select::make('user_assignee_id')
+                    ->relationship('assignee', 'name')
                     ->searchable()
                     ->preload()
-                    ->label('Responsable')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . '  ' . $record->prenom . ' - ' . $record->role),
-                Forms\Components\DatePicker::make('date_planifiee')
+                    ->label('Assigné à')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . ' ' . $record->prenom . ' - ' . $record->role),
+                Forms\Components\DateTimePicker::make('date_debut')
                     ->required()
                     ->minDate(now())
-                    ->label('Date planifiée'),
-                Forms\Components\DatePicker::make('date_reelle')
-                    ->minDate(now()),
+                    ->label('Date de début'),
+                Forms\Components\DateTimePicker::make('date_fin')
+                    ->minDate(now())
+                    ->label('Date de fin'),
                 Forms\Components\Select::make('statut')
                     ->required()
                     ->reactive()
@@ -76,9 +80,6 @@ class MaintenancePreventiveResource extends Resource
                 Forms\Components\Textarea::make('description')
                     ->required()
                     ->columnSpanFull(),
-                Forms\Components\TextInput::make('periodicite_jours')
-                    ->required()
-                    ->numeric(),
                 Forms\Components\Textarea::make('remarques')
                     ->columnSpanFull(),
                 Forms\Components\Repeater::make('pieces_utilisees')
@@ -158,35 +159,21 @@ class MaintenancePreventiveResource extends Resource
                         return ($piece ? $piece->designation : 'Pièce inconnue') .
                             ' - Qté: ' . ($state['quantite_utilisee'] ?? '0');
                     })
-                    ->disableLabel(false)
-                    ->afterStateHydrated(function ($state, $record) use (&$originalPiecesState) {
-                        if (!$record) {
-                            return;
-                        }
-
-                        // Store the original state for comparison during save
-                        $originalPiecesState = collect($record->pieces->map(function ($piece) {
-                            return [
-                                'piece_id' => $piece->id,
-                                'quantite_utilisee' => $piece->pivot->quantite_utilisee,
-                            ];
-                        })->toArray());
-                    }),
+                    ->disableLabel(false),
             ]);
     }
 
     public static function table(Table $table): Table
     {
-
         return $table
-                ->headerActions([
-                    Action::make('calendrier')
-                        ->label('Calendrier')
-                        ->url(fn () => route('filament.'. auth()->user()->role .'.pages.calendar'))
-                        ->icon('heroicon-o-calendar') // optional icon
-                        ->color('yellow'), // optional color
-                ])
-                ->columns([
+            ->headerActions([
+                Action::make('calendrier')
+                    ->label('Calendrier')
+                    ->url(fn () => route('filament.'. auth()->user()->role .'.pages.calendar'))
+                    ->icon('heroicon-o-calendar')
+                    ->color('yellow'),
+            ])
+            ->columns([
                 Tables\Columns\TextColumn::make('equipement.designation')
                     ->label('Équipement')
                     ->sortable(query: function ($query, $direction) {
@@ -194,18 +181,21 @@ class MaintenancePreventiveResource extends Resource
                     })
                     ->searchable()
                     ->getStateUsing(fn ($record) => $record->equipement?->designation . ' - ' . $record->equipement?->modele),
-                Tables\Columns\TextColumn::make('user.name')
-                    ->label('Responsable')
-                    ->sortable(query: function ($query, $direction) {
-                        return $query->orderBy('user.name', $direction);
-                    })
-                    ->getStateUsing(fn ($record) => isset($record->user) ? $record->user?->name . '  ' . $record->user?->prenom . ' - ' . $record->user?->role : 'non spécifié')
+                Tables\Columns\TextColumn::make('createur.name')
+                    ->label('Créé par')
+                    ->sortable()
+                    ->getStateUsing(fn ($record) => $record->createur?->name . ' ' . $record->createur?->prenom)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('date_planifiee')
-                    ->date()
+                Tables\Columns\TextColumn::make('assignee.name')
+                    ->label('Assigné à')
+                    ->sortable()
+                    ->getStateUsing(fn ($record) => $record->assignee?->name . ' ' . $record->assignee?->prenom)
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('date_debut')
+                    ->dateTime()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('date_reelle')
-                    ->date()
+                Tables\Columns\TextColumn::make('date_fin')
+                    ->dateTime()
                     ->sortable()
                     ->placeholder('Non définie'),
                 Tables\Columns\TextColumn::make('statut')
@@ -222,9 +212,6 @@ class MaintenancePreventiveResource extends Resource
                 Tables\Columns\IconColumn::make('type_externe')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('fournisseur'),
-                Tables\Columns\TextColumn::make('periodicite_jours')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -243,7 +230,7 @@ class MaintenancePreventiveResource extends Resource
                         return !empty($piecesInfo) ? implode(', ', $piecesInfo) : 'Aucune pièce';
                     }),
             ])
-            ->defaultSort('date_planifiee', 'desc')
+            ->defaultSort('date_debut', 'desc')
             ->filters([
                 //
             ])
@@ -271,8 +258,8 @@ class MaintenancePreventiveResource extends Resource
         return [
             'index' => Pages\ListMaintenancePreventives::route('/'),
             'create' => Pages\CreateMaintenancePreventive::route('/create'),
-            'edit' => Pages\EditMaintenancePreventive::route('/{record}/edit'),
             'view' => Pages\ViewMaintenancePreventive::route('/{record}'),
+            'edit' => Pages\EditMaintenancePreventive::route('/{record}/edit'),
         ];
     }
 }

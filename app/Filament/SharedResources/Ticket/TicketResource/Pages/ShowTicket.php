@@ -81,12 +81,6 @@ class ShowTicket extends ViewRecord
                         TextEntry::make('assignee.name')
                             ->label('Assigné à')
                             ->getStateUsing(fn ($record) => $record->assignee?->name . ' ' . $record->assignee?->prenom),
-                        TextEntry::make('date_attribution')
-                            ->label('Date d\'attribution')
-                            ->dateTime('d/m/Y H:i'),
-                        TextEntry::make('date_cloture')
-                            ->label('Date de clôture')
-                            ->dateTime('d/m/Y H:i'),
                     ])->columns(2),
 
                 Section::make('Rapport et Résolution')

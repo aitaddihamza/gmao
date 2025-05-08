@@ -8,6 +8,10 @@ use Saade\FilamentFullCalendar\Data\EventData;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 use Illuminate\Database\Eloquent\Model;
 use Saade\FilamentFullCalendar\Actions;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Form;
 
 class CalendarWidget extends FullCalendarWidget
 {
@@ -16,7 +20,7 @@ class CalendarWidget extends FullCalendarWidget
     protected function headerActions(): array
     {
         return [
-            // Actions existantes...
+          //
         ];
     }
 
@@ -24,6 +28,15 @@ class CalendarWidget extends FullCalendarWidget
     {
         return [
             Actions\EditAction::make()
+                ->form([                  
+                    DateTimePicker::make('date_debut')
+                        ->required()
+                        ->label('Date de début'),
+                    DateTimePicker::make('date_fin')
+                        ->required()
+                        ->label('Date de fin')
+                ])
+                ->visible(fn (MaintenancePreventive $record) => $record->user_createur_id === auth()->id())
         ];
     }
 
@@ -32,6 +45,7 @@ class CalendarWidget extends FullCalendarWidget
         return <<<JS
     function({ event, el }) {
         const status = (event.extendedProps?.statut ?? '').toLowerCase();
+        const isCreator = event.extendedProps?.isCreator ?? true;
 
         const colors = {
             'planifiee': '#3b82f6',
@@ -47,6 +61,11 @@ class CalendarWidget extends FullCalendarWidget
         el.style.backgroundColor = background;
         el.style.border = 'none';
         el.style.color = 'white';
+        
+        if (!isCreator) {
+            el.style.cursor = 'not-allowed';
+            el.classList.add('fc-event-non-editable');
+        }
 
         el.setAttribute("x-tooltip", "tooltip");
         el.setAttribute("x-data", "{ tooltip: '"+event.title+"' }");
@@ -57,21 +76,30 @@ class CalendarWidget extends FullCalendarWidget
     public function fetchEvents(array $fetchInfo): array
     {
         return MaintenancePreventive::query()
-            ->where('date_planifiee', '>=', $fetchInfo['start'])
-            ->where('date_planifiee', '<=', $fetchInfo['end'])
+            ->where(function ($query) use ($fetchInfo) {
+                $query->whereBetween('date_debut', [$fetchInfo['start'], $fetchInfo['end']])
+                    ->orWhereBetween('date_fin', [$fetchInfo['start'], $fetchInfo['end']])
+                    ->orWhere(function ($q) use ($fetchInfo) {
+                        $q->where('date_debut', '<=', $fetchInfo['start'])
+                            ->where('date_fin', '>=', $fetchInfo['end']);
+                    });
+            })
             ->get()
             ->map(
                 fn (MaintenancePreventive $mp) => EventData::make()
                 ->id($mp->id)
                 ->title($mp->equipement->designation . " - " . $mp->statut)
                 ->backgroundColor('transparent')
-                ->start($mp->date_planifiee)
-                ->end($mp->date_planifiee)
+                ->start($mp->date_debut)
+                ->end($mp->date_fin)
                 ->url(
                     url: MaintenancePreventiveResource::getUrl(name: 'view', parameters: ['record' => $mp])
                 )
                 ->extendedProps([
                     'statut' => $mp->statut,
+                    'description' => $mp->description,
+                    'assignee' => $mp->assignee?->name . ' ' . $mp->assignee?->prenom,
+                    'isCreator' => $mp->user_createur_id === auth()->id(),
                 ])
             )
             ->toArray();
@@ -81,8 +109,6 @@ class CalendarWidget extends FullCalendarWidget
     {
         return true;
     }
-
-
 
     public function config(): array
     {
@@ -99,9 +125,63 @@ class CalendarWidget extends FullCalendarWidget
                 'meridiem' => false,
                 'hour12' => false,
             ],
-            'displayEventTime' => false,
+            'displayEventTime' => true,
+            'selectable' => false,
+            'selectMirror' => false,
+            'dayMaxEvents' => true,
+            'editable' => true,
+            'droppable' => true,
+            'eventOverlap' => false,
+            'slotMinTime' => '08:00:00',
+            'slotMaxTime' => '18:00:00',
+            'allDaySlot' => false,
+            'eventStartEditable' => true,
+            'eventDurationEditable' => true,
+            'eventConstraint' => 'businessHours',
+            'eventAllow' => <<<JS
+                function(dropInfo, draggedEvent) {
+                    return draggedEvent.extendedProps.isCreator;
+                }
+            JS,
+            'eventDrop' => <<<JS
+                function(info) {
+                    const event = info.event;
+                    const isCreator = event.extendedProps.isCreator;
+                    
+                    if (!isCreator) {
+                        info.revert();
+                        return;
+                    }
+
+                    // Mettre à jour les dates dans le formulaire
+                    const form = document.querySelector('form');
+                    if (form) {
+                        const dateDebutInput = form.querySelector('[name="date_debut"]');
+                        const dateFinInput = form.querySelector('[name="date_fin"]');
+                        
+                        if (dateDebutInput && dateFinInput) {
+                            const startDate = event.start.toISOString();
+                            const endDate = event.end ? event.end.toISOString() : startDate;
+                            
+                            // Mettre à jour les valeurs des champs
+                            dateDebutInput.value = startDate;
+                            dateFinInput.value = endDate;
+                            
+                            // Déclencher les événements de changement
+                            const changeEvent = new Event('change', { bubbles: true });
+                            dateDebutInput.dispatchEvent(changeEvent);
+                            dateFinInput.dispatchEvent(changeEvent);
+                            
+                            // Forcer la mise à jour du formulaire
+                            if (typeof Livewire !== 'undefined') {
+                                Livewire.find(form.closest('[wire\\:id]').getAttribute('wire:id'))
+                                    .set('data.date_debut', startDate)
+                                    .set('data.date_fin', endDate);
+                            }
+                        }
+                    }
+                }
+            JS,
         ];
     }
-
-
 }

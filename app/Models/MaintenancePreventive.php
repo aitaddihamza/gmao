@@ -18,12 +18,12 @@ class MaintenancePreventive extends Model
 
     protected $fillable = [
         'equipement_id',
-        'user_id',
-        'date_planifiee',
-        'date_reelle',
+        'user_createur_id',
+        'user_assignee_id',
+        'date_debut',
+        'date_fin',
         'description',
         'statut',
-        'periodicite_jours',
         'type_externe',
         'fournisseur',
         'remarques',
@@ -32,8 +32,8 @@ class MaintenancePreventive extends Model
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-        'date_planifiee' => 'date',
-        'date_reelle' => 'date',
+        'date_debut' => 'datetime',
+        'date_fin' => 'datetime',
     ];
 
     public function pieces(): BelongsToMany
@@ -44,20 +44,19 @@ class MaintenancePreventive extends Model
                     ->withTimestamps();
     }
 
-
-
     public function equipement(): BelongsTo
     {
         return $this->belongsTo(Equipement::class, 'equipement_id');
     }
 
-    public function user(): BelongsTo
+    public function createur(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id')
-                    ->where('role', '!=', 'admin')
-                    ->where('role', '!=', 'chef')
-                    ->where('role', '!=', 'responsable')
-                    ->where('role', '!=', 'majeur')
-                    ->where('role', '!=', 'directeur');
+        return $this->belongsTo(User::class, 'user_createur_id');
+    }
+
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_assignee_id')
+                    ->where('role', '=', 'technicien');
     }
 }

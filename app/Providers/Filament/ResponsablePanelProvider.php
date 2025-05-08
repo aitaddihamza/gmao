@@ -29,6 +29,7 @@ class ResponsablePanelProvider extends PanelProvider
             ->id('responsable')
             ->path('responsable')
             ->brandName('GMAO')
+            ->databaseNotifications()
             ->plugins([FilamentFullCalendarPlugin::make()
                     ->selectable()
                     ->editable()

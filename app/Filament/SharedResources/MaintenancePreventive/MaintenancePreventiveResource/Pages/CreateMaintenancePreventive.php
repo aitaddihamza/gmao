@@ -51,7 +51,8 @@ class CreateMaintenancePreventive extends CreateRecord
             $record->pieces()->sync($pieceData);
         }
 
-        $technicienResponsable = User::find($this->getRecord()->user_id);
+        $technicienResponsable = $this->getRecord()->assignee;
+
         if (isset($technicienResponsable)) {
             $userRole = $technicienResponsable->role;
             Notification::make()

@@ -27,6 +27,8 @@ class MajeurPanelProvider extends PanelProvider
         return $panel
             ->id('majeur')
             ->path('majeur')
+            ->databaseNotifications()
+            ->brandName('GMAO')
             ->plugins([FilamentFullCalendarPlugin::make()
                     ->selectable()
                     ->editable()

@@ -20,7 +20,6 @@ class Ticket extends Model
         'priorite',
         'description',
         'chemin_image',
-        'date_attribution',
         'date_cloture',
         'solution',
         'diagnostic',
@@ -34,7 +33,6 @@ class Ticket extends Model
 
     protected $casts = [
         'date_creation' => 'datetime',
-        'date_attribution' => 'datetime',
         'date_cloture' => 'datetime',
         'chemin_image' => 'array',
     ];

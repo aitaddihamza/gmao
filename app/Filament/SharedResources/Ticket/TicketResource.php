@@ -164,10 +164,6 @@ class TicketResource extends Resource
                             ->visible(fn (Forms\Get $get): bool =>
                                 in_array($get('statut'), ['attribue', 'en_cours', 'en_attente', 'cloture'])),
 
-                        Forms\Components\DateTimePicker::make('date_attribution')
-                            ->visible(fn (Forms\Get $get): bool =>
-                                in_array($get('statut'), ['attribue', 'en_cours', 'en_attente', 'cloture']))
-                            ->default(now()),
                     ]),
 
                 Forms\Components\Section::make('Rapport et Résolution')
@@ -193,6 +189,7 @@ class TicketResource extends Resource
                         Forms\Components\DateTimePicker::make('date_intervention')
                             ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif')
                             ->default(null)
+                            ->required()
                             ->seconds(false)
                             ->displayFormat('d/m/Y H:i')
                             ->dehydrateStateUsing(fn ($state) => $state ? now()->setTimeFromTimeString($state) : null),
@@ -210,13 +207,6 @@ class TicketResource extends Resource
                             ->hidden(fn (Forms\Get $get) => $get('type_ticket') != 'correctif'),
                         Forms\Components\TextInput::make('fournisseur')
                             ->hidden(fn (Forms\Get $get) => !$get('type_externe')),
-                        Forms\Components\DateTimePicker::make('date_cloture')
-                            ->visible(fn (Forms\Get $get): bool =>
-                                $get('statut') === 'cloture')
-                            ->default(null)
-                            ->seconds(false)
-                            ->displayFormat('d/m/Y H:i')
-                            ->dehydrateStateUsing(fn ($state) => $state ? now()->setTimeFromTimeString($state) : null),
                         Forms\Components\Repeater::make('pieces_utilisees')
                             ->schema([
                                 Forms\Components\Select::make('piece_id')

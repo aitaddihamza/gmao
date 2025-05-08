@@ -89,11 +89,6 @@ class MaintenanceCorrectiveResource extends Resource
                     })
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('date_attribution')
-                    ->label('Date d\'attribution')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-
                 Tables\Columns\TextColumn::make('date_resolution')
                     ->label('Date de résolution')
                     ->dateTime('d/m/Y H:i')

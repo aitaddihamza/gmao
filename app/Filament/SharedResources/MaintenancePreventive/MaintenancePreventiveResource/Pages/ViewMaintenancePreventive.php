@@ -24,13 +24,6 @@ class ViewMaintenancePreventive extends ViewRecord
                         TextEntry::make('equipement.designation')
                             ->label('Équipement')
                             ->columnSpanFull(),
-                        TextEntry::make('type_maintenance')
-                            ->label('Type de maintenance')
-                            ->badge()
-                            ->color('success'),
-                        TextEntry::make('frequence')
-                            ->label('Fréquence')
-                            ->badge(),
                         TextEntry::make('statut')
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
@@ -39,6 +32,14 @@ class ViewMaintenancePreventive extends ViewRecord
                                 'termine' => 'success',
                                 default => 'gray',
                             }),
+                        TextEntry::make('type_externe')
+                            ->label('Type de maintenance')
+                            ->getStateUsing(fn ($record) => $record->type_externe ? 'Externe' : 'Interne')
+                            ->badge()
+                            ->color(fn ($state) => $state === 'Externe' ? 'success' : 'warning'),
+                        TextEntry::make('fournisseur')
+                            ->label('Fournisseur')
+                            ->visible(fn ($record) => $record->type_externe),
                     ])->columns(3),
 
                 Section::make('Détails de la maintenance')
@@ -46,35 +47,25 @@ class ViewMaintenancePreventive extends ViewRecord
                         TextEntry::make('description')
                             ->label('Description')
                             ->columnSpanFull(),
-                        TextEntry::make('instructions')
-                            ->label('Instructions')
-                            ->columnSpanFull(),
+                        TextEntry::make('remarques')
+                            ->label('Remarques')
+                            ->columnSpanFull()
                     ]),
-
-                Section::make('Planification')
-                    ->schema([
-                        TextEntry::make('date_planifiee')
-                            ->label('Date planifiée')
-                            ->dateTime('d/m/Y H:i'),
-                        TextEntry::make('date_debut')
-                            ->label('Date de début')
-                            ->dateTime('d/m/Y H:i'),
-                        TextEntry::make('date_fin')
-                            ->label('Date de fin')
-                            ->dateTime('d/m/Y H:i'),
-                        TextEntry::make('duree_estimee')
-                            ->label('Durée estimée')
-                            ->getStateUsing(fn ($record) => $record->duree_estimee . ' heures'),
-                    ])->columns(2),
 
                 Section::make('Assignation')
                     ->schema([
                         TextEntry::make('createur.name')
                             ->label('Créé par')
                             ->getStateUsing(fn ($record) => $record->createur?->name . ' ' . $record->createur?->prenom),
-                        TextEntry::make('technicien.name')
-                            ->label('Technicien assigné')
-                            ->getStateUsing(fn ($record) => $record->technicien?->name . ' ' . $record->technicien?->prenom),
+                        TextEntry::make('assignee.name')
+                            ->label('Assigné à')
+                            ->getStateUsing(fn ($record) => $record->assignee?->name . ' ' . $record->assignee?->prenom),
+                        TextEntry::make('date_debut')
+                            ->label('Date de début')
+                            ->dateTime('d/m/Y H:i'),
+                        TextEntry::make('date_fin')
+                            ->label('Date de fin')
+                            ->dateTime('d/m/Y H:i'),
                     ])->columns(2),
 
                 Section::make('Rapport de maintenance')
