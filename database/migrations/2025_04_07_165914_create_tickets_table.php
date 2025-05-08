@@ -24,8 +24,8 @@ return new class () extends Migration {
             // resent fields
             $table->text('solution')->nullable();
             $table->text('diagnostic')->nullable();
-            $table->dateTime('date_resolution')->nullable()->change();
-            $table->dateTime('date_intervention')->nullable()->change();
+            $table->dateTime('date_resolution')->nullable();
+            $table->dateTime('date_intervention')->nullable();
             $table->integer('temps_arret')->nullable();
             $table->boolean('type_externe')->default(false);
             $table->timestamps();

@@ -9,8 +9,10 @@ use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\Actions;
 use Carbon\Carbon;
-use Filament\Actions;
+use Filament\Actions as PageActions;
+use Illuminate\Support\Facades\Storage;
 
 class ShowTicket extends ViewRecord
 {
@@ -130,6 +132,15 @@ class ShowTicket extends ViewRecord
                         TextEntry::make('fournisseur')
                             ->label('Fournisseur')
                             ->visible(fn ($record) => $record->type_ticket === 'correctif' && $record->type_externe),
+                        Actions::make([
+                            Actions\Action::make('view_rapport')
+                                ->label('Voir le rapport')
+                                ->icon('heroicon-o-document-text')
+                                ->url(fn ($record) => $record->rapport_path ? Storage::url($record->rapport_path) : null)
+                                ->visible(fn ($record) => $record->rapport_path !== null && $record->statut === 'cloture')
+                                ->color('primary')
+                                ->button(),
+                        ]),
                     ])->columns(2),
 
                 Section::make('Pièces utilisées')
@@ -152,11 +163,9 @@ class ShowTicket extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\EditAction::make(),
-            // close action
-            Actions\Action::make('close')
+            PageActions\EditAction::make(),
+            PageActions\Action::make('close')
                 ->label('Fermer')
-                // filament.technicien.resources.maintenance-correctives.index
                 ->url(route('filament.' . auth()->user()->role . '.resources.maintenance-correctives.index'))
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')

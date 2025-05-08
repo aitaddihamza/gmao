@@ -20,6 +20,7 @@ class Ticket extends Model
         'priorite',
         'description',
         'chemin_image',
+        'rapport_path',
         'solution',
         'diagnostic',
         'fournisseur',
@@ -36,6 +37,11 @@ class Ticket extends Model
         'date_intervention' => 'datetime',
         'date_resolution' => 'datetime',
         'chemin_image' => 'array',
+        'type_externe' => 'boolean',
+        'statut' => 'string',
+        'type_ticket' => 'string',
+        'priorite' => 'string',
+        'gravite_panne' => 'string',
     ];
 
     // Relations
@@ -71,7 +77,6 @@ class Ticket extends Model
         return $this->gravite_panne * $this->frequence_occurrence * $this->detectabilite;
     }
 
-
     public function pieces(): BelongsToMany
     {
         return $this->belongsToMany(Piece::class, 'interventions_pieces', 'maintenance_corr_id', 'piece_id')
@@ -79,5 +84,4 @@ class Ticket extends Model
                     ->using(MaintenanceCorrectivePiece::class)
                     ->withTimestamps();
     }
-
 }

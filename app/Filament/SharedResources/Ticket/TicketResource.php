@@ -16,6 +16,7 @@ use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Actions;
+use Illuminate\Support\Facades\Storage;
 
 class TicketResource extends Resource
 {
@@ -65,7 +66,12 @@ class TicketResource extends Resource
                             ])
                             ->required()
                             ->default('nouveau')
-                            ->live(),
+                            ->live()
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                if ($state === 'cloture') {
+                                    $set('date_resolution', now());
+                                }
+                            }),
                     ]),
 
                 Forms\Components\Section::make('Détails du problème')
@@ -204,7 +210,7 @@ class TicketResource extends Resource
                             ->required()
                             ->seconds(false)
                             ->displayFormat('d/m/Y H:i')
-                            ->dehydrateStateUsing(fn ($state) => $state ? now()->setTimeFromTimeString($state) : null),
+                            ->dehydrateStateUsing(fn ($state) => $state ? now()->parse($state) : null),
                         Forms\Components\DateTimePicker::make('date_resolution')
                             ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif')
                             ->label('date de résolution')
@@ -212,13 +218,68 @@ class TicketResource extends Resource
                             ->default(null)
                             ->seconds(false)
                             ->displayFormat('d/m/Y H:i')
-                            ->dehydrateStateUsing(fn ($state) => $state ? now()->setTimeFromTimeString($state) : null),
+                            ->dehydrateStateUsing(fn ($state) => $state ? now()->parse($state) : null),
                         Forms\Components\Toggle::make('type_externe')
                             ->label('Intervention est externe ?')
                             ->reactive()
-                            ->hidden(fn (Forms\Get $get) => $get('type_ticket') != 'correctif'),
+                            ->hidden(fn (Forms\Get $get) => $get('type_ticket') != 'correctif')
+                            ->default(false),
                         Forms\Components\TextInput::make('fournisseur')
                             ->hidden(fn (Forms\Get $get) => !$get('type_externe')),
+                        Forms\Components\Select::make('rapport_type')
+                            ->label('Type de rapport')
+                            ->options([
+                                'manuel' => 'Télécharger un rapport',
+                                'auto' => 'Générer automatiquement',
+                            ])
+                            ->default('manuel')
+                            ->reactive()
+                            ->visible(fn (Forms\Get $get) => $get('statut') === 'cloture'),
+                        Forms\Components\FileUpload::make('rapport_path')
+                            ->label('Rapport d\'intervention')
+                            ->directory('rapports')
+                            ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
+                            ->maxSize(10240)
+                            ->visible(fn (Forms\Get $get) => $get('statut') === 'cloture' && $get('rapport_type') === 'manuel'),
+                        Forms\Components\Actions::make([
+                            Forms\Components\Actions\Action::make('generate_report')
+                                ->label('Générer le rapport')
+                                ->icon('heroicon-o-document-text')
+                                ->action(function (Forms\Get $get, Forms\Set $set) {
+                                    $ticket = \App\Models\Ticket::find($get('id'));
+                                    if (!$ticket) {
+                                        return;
+                                    }
+
+                                    // Générer le contenu du rapport
+                                    $content = view('reports.ticket', [
+                                        'ticket' => $ticket,
+                                        'equipement' => $ticket->equipement,
+                                        'createur' => $ticket->createur,
+                                        'assignee' => $ticket->assignee,
+                                        'pieces' => $ticket->pieces,
+                                    ])->render();
+
+                                    // Créer le PDF
+                                    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($content);
+                                    
+                                    // Générer un nom de fichier unique
+                                    $filename = 'rapport_ticket_' . $ticket->id . '_' . now()->format('Y-m-d_His') . '.pdf';
+                                    $path = 'rapports/' . $filename;
+                                    
+                                    // Sauvegarder le PDF
+                                    Storage::put('public/' . $path, $pdf->output());
+                                    
+                                    // Mettre à jour le chemin du rapport
+                                    $set('rapport_path', $path);
+                                    
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Rapport généré avec succès')
+                                        ->success()
+                                        ->send();
+                                })
+                                ->visible(fn (Forms\Get $get) => $get('statut') === 'cloture' && $get('rapport_type') === 'auto'),
+                        ]),
                         Forms\Components\Repeater::make('pieces_utilisees')
                             ->schema([
                                 Forms\Components\Select::make('piece_id')
