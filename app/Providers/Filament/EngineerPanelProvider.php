@@ -26,7 +26,8 @@ class EngineerPanelProvider extends PanelProvider
         return $panel
             ->id('engineer')
             ->path('engineer')
-            ->brandName('GMAO')
+            ->brandLogo(asset('favicon.svg'))
+            ->brandLogoHeight('3rem')
             ->colors([
                 'primary' => Color::Blue
             ])

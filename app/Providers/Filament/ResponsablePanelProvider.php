@@ -28,7 +28,8 @@ class ResponsablePanelProvider extends PanelProvider
         return $panel
             ->id('responsable')
             ->path('responsable')
-            ->brandName('GMAO')
+            ->brandLogo(asset('favicon.svg'))
+            ->brandLogoHeight('3rem')
             ->databaseNotifications()
             ->plugins([FilamentFullCalendarPlugin::make()
                     ->selectable()

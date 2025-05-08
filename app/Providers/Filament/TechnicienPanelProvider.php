@@ -26,7 +26,8 @@ class TechnicienPanelProvider extends PanelProvider
         return $panel
             ->id('technicien')
             ->path('technicien')
-            ->brandName('GMAO')
+            ->brandLogo(asset('favicon.svg'))
+            ->brandLogoHeight('3rem')
             ->plugins([FilamentFullCalendarPlugin::make()
                 ->schedulerLicenseKey('')
                 ->selectable()

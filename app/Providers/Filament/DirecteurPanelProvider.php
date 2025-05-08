@@ -27,7 +27,9 @@ class DirecteurPanelProvider extends PanelProvider
         return $panel
             ->id('directeur')
             ->path('directeur')
-            ->plugins([FilamentFullCalendarPlugin::make()
+            ->brandLogo(asset('favicon.svg'))
+            ->brandLogoHeight('3rem')
+             ->plugins([FilamentFullCalendarPlugin::make()
                     ->selectable()
                     ->editable()
             ])

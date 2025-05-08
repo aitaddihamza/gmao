@@ -245,7 +245,7 @@ class MaintenancePreventiveResource extends Resource
                     ->label('Calendrier')
                     ->url(fn () => route('filament.'. auth()->user()->role .'.pages.calendar'))
                     ->icon('heroicon-o-calendar')
-                    ->color('yellow'),
+                    ->color('success')
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('equipement.designation')
