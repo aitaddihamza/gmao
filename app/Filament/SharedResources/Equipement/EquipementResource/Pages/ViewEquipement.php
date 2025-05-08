@@ -22,11 +22,16 @@ class ViewEquipement extends ViewRecord
                     ->schema([
                         Infolists\Components\TextEntry::make('bloc.nom_bloc')
                             ->label('Bloc'),
+                        Infolists\Components\TextEntry::make('bloc.typeBloc.nom')
+                            ->label('Type de bloc'),
                         Infolists\Components\TextEntry::make('designation'),
                         Infolists\Components\TextEntry::make('marque'),
                         Infolists\Components\TextEntry::make('modele'),
                         Infolists\Components\TextEntry::make('numero_serie')
                             ->label('Numéro de série'),
+                        Infolists\Components\TextEntry::make('bloc.localisation')
+                            ->label('Localisation'),
+
                     ])->columns(2),
 
                 Infolists\Components\Section::make('Dates importantes')
