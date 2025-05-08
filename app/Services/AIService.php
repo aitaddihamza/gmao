@@ -11,10 +11,12 @@ class AIService
     {
         $recommandations = Prism::text()
             ->using(Provider::OpenAI, 'google/gemma-3-12b-it')
-            ->withSystemPrompt("Vous êtes un expert en maintenance industrielle. Votre tâche est de générer des recommandations pertinentes pour résoudre des problèmes d'équipement")
-            ->withPrompt("générer des recommandations pour le problème suivant : $description. Voici les informations sur l'équipement : $equipmentInfo")
+            ->withSystemPrompt("Votre tâche est de fournir des recommandations claires et concises pour résoudre des problèmes d'équipement. Les réponses doivent être structurées sous forme de points.")
+            ->withPrompt("Générez des recommandations pour le problème suivant : $description. Voici les informations sur l'équipement : $equipmentInfo. Formatez la réponse comme suit : 
+            - Point : [Description concise]
+            - Point : [Description concise]
+            ...")
             ->asText();
-
 
         return $recommandations->text;
     }

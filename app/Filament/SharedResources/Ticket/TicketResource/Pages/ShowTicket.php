@@ -126,7 +126,14 @@ class ShowTicket extends ViewRecord
                                 if ($record->date_intervention && $record->date_resolution) {
                                     $intervention = Carbon::parse($record->date_intervention);
                                     $resolution = Carbon::parse($record->date_resolution);
-                                    return $intervention->diffInHours($resolution) . ' heures';
+                                    $diffInHours = $intervention->diffInHours($resolution);
+
+                                    if ($diffInHours > 48) {
+                                        $diffInDays = $intervention->diffInDays($resolution);
+                                        return intval($diffInDays) . ' jours'; // Affiche uniquement les jours sans décimales ni virgule
+                                    }
+
+                                    return intval($diffInHours) . ' heures'; // Affiche les heures sans décimales ni virgule
                                 }
                                 return 'Non calculé';
                             }),

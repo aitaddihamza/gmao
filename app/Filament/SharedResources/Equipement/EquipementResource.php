@@ -249,7 +249,7 @@ class EquipementResource extends Resource
                         })
                 ]),
             ])
-            ->defaultSort('date_acquisition', 'desc');
+            ->defaultSort('updated_at', 'desc');
     }
 
     public static function getRelations(): array

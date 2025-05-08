@@ -10,7 +10,6 @@
         "barryvdh/laravel-dompdf": "^3.1",
         "doctrine/dbal": "^4.2",
         "filament/filament": "^3.3",
-        "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "^11.31",
         "laravel/reverb": "^1.5",
         "laravel/tinker": "^2.9",
