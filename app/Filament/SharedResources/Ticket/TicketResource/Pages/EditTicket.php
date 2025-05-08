@@ -125,7 +125,6 @@ class EditTicket extends EditRecord
                 ->sendToDatabase($technicienResponsable);
         }
 
-
         $equipement = $this->getRecord()->equipement;
         $equipementEtat = $this->data['equipement_etat'];
         if ($equipementEtat) {

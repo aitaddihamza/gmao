@@ -34,7 +34,8 @@ class MaintenancePreventivePolicy
 
     public function delete(User $user, MaintenancePreventive $maintenancePreventive): bool
     {
-        return in_array($user->role, self::ALLOWED_ROLES);
+        // seul le créateur
+        return $user->id === $maintenancePreventive->user_assignee_id;
     }
 
     public function update(User $user, MaintenancePreventive $maintenancePreventive): bool

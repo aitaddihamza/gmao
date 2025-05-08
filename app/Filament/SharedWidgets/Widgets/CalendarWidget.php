@@ -8,35 +8,56 @@ use Saade\FilamentFullCalendar\Data\EventData;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 use Illuminate\Database\Eloquent\Model;
 use Saade\FilamentFullCalendar\Actions;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
+use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 
 class CalendarWidget extends FullCalendarWidget
 {
     public Model | string | null $model = MaintenancePreventive::class;
 
+
     protected function headerActions(): array
     {
         return [
-          //
+            //
         ];
     }
+
+
+    public function getFormSchema(): array
+    {
+        return [
+            // date début and date fin with the updatd values
+            Forms\Components\DatePicker::make('date_debut')
+                ->label('Date de début')
+                ->required()
+                ->default(fn ($record, array $arguments) => $arguments['event']['start'] ?? $record->date_debut)
+                ->displayFormat('Y-m-d H:i:s')
+                ->placeholder('Sélectionner une date de début'),
+            Forms\Components\DatePicker::make('date_fin')
+                ->label('Date de fin')
+                ->required()
+                ->default(fn ($record, array $arguments) => $arguments['event']['end'] ?? $record->date_fin)
+                ->displayFormat('Y-m-d H:i:s')
+                ->placeholder('Sélectionner une date de fin'),
+        ];
+    }
+
 
     protected function modalActions(): array
     {
         return [
+            // rempli automatiquement les dates par les valeurs de l'événement
             Actions\EditAction::make()
-                ->form([                  
-                    DateTimePicker::make('date_debut')
-                        ->required()
-                        ->label('Date de début'),
-                    DateTimePicker::make('date_fin')
-                        ->required()
-                        ->label('Date de fin')
-                ])
-                ->visible(fn (MaintenancePreventive $record) => $record->user_createur_id === auth()->id())
+                ->mountUsing(
+                    function (Forms\Form $form, array $arguments) {
+                        $form->fill([
+                            'date_debut' => $arguments['event']['start'],
+                            'date_fin' => $arguments['event']['end'],
+                        ]);
+                    }
+                ),
         ];
     }
 
@@ -45,13 +66,13 @@ class CalendarWidget extends FullCalendarWidget
         return <<<JS
     function({ event, el }) {
         const status = (event.extendedProps?.statut ?? '').toLowerCase();
-        const isCreator = event.extendedProps?.isCreator ?? true;
+        const isCreator = event.extendedProps?.isCreator ?? false;
 
         const colors = {
             'planifiee': '#3b82f6',
             'en_attente': '#facc15',
             'en_cours': '#6366f1',
-            'terminee': '#10b981',
+            'termine': '#10b981',
             'reportee': '#9ca3af',
             'annulee': '#ef4444'
         };
@@ -61,10 +82,12 @@ class CalendarWidget extends FullCalendarWidget
         el.style.backgroundColor = background;
         el.style.border = 'none';
         el.style.color = 'white';
-        
+
         if (!isCreator) {
             el.style.cursor = 'not-allowed';
             el.classList.add('fc-event-non-editable');
+            el.style.pointerEvents = 'none';
+            event.setProp('editable', false); // Disable editing programmatically
         }
 
         el.setAttribute("x-tooltip", "tooltip");
@@ -97,9 +120,7 @@ class CalendarWidget extends FullCalendarWidget
                 )
                 ->extendedProps([
                     'statut' => $mp->statut,
-                    'description' => $mp->description,
-                    'assignee' => $mp->assignee?->name . ' ' . $mp->assignee?->prenom,
-                    'isCreator' => $mp->user_createur_id === auth()->id(),
+                    'isCreator' => $mp->user_createur_id == auth()->id(),
                 ])
             )
             ->toArray();
@@ -125,63 +146,49 @@ class CalendarWidget extends FullCalendarWidget
                 'meridiem' => false,
                 'hour12' => false,
             ],
-            'displayEventTime' => true,
-            'selectable' => false,
-            'selectMirror' => false,
-            'dayMaxEvents' => true,
             'editable' => true,
-            'droppable' => true,
-            'eventOverlap' => false,
-            'slotMinTime' => '08:00:00',
-            'slotMaxTime' => '18:00:00',
-            'allDaySlot' => false,
-            'eventStartEditable' => true,
-            'eventDurationEditable' => true,
-            'eventConstraint' => 'businessHours',
-            'eventAllow' => <<<JS
-                function(dropInfo, draggedEvent) {
-                    return draggedEvent.extendedProps.isCreator;
-                }
-            JS,
-            'eventDrop' => <<<JS
-                function(info) {
-                    const event = info.event;
-                    const isCreator = event.extendedProps.isCreator;
-                    
-                    if (!isCreator) {
-                        info.revert();
-                        return;
-                    }
-
-                    // Mettre à jour les dates dans le formulaire
-                    const form = document.querySelector('form');
-                    if (form) {
-                        const dateDebutInput = form.querySelector('[name="date_debut"]');
-                        const dateFinInput = form.querySelector('[name="date_fin"]');
-                        
-                        if (dateDebutInput && dateFinInput) {
-                            const startDate = event.start.toISOString();
-                            const endDate = event.end ? event.end.toISOString() : startDate;
-                            
-                            // Mettre à jour les valeurs des champs
-                            dateDebutInput.value = startDate;
-                            dateFinInput.value = endDate;
-                            
-                            // Déclencher les événements de changement
-                            const changeEvent = new Event('change', { bubbles: true });
-                            dateDebutInput.dispatchEvent(changeEvent);
-                            dateFinInput.dispatchEvent(changeEvent);
-                            
-                            // Forcer la mise à jour du formulaire
-                            if (typeof Livewire !== 'undefined') {
-                                Livewire.find(form.closest('[wire\\:id]').getAttribute('wire:id'))
-                                    .set('data.date_debut', startDate)
-                                    .set('data.date_fin', endDate);
-                            }
-                        }
-                    }
-                }
-            JS,
+            'selectable' => true,
+            'selectMirror' => true,
+            'select' => 'function(info) {
+                $wire.dispatch("open-modal", { id: "create-maintenance", arguments: { start: info.startStr, end: info.endStr } });
+            }',
         ];
+    }
+
+    protected function getCreateFormSchema(): array
+    {
+        return [
+            Forms\Components\Select::make('equipement_id')
+                ->relationship('equipement', 'designation')
+                ->required()
+                ->label('Équipement'),
+            Forms\Components\DatePicker::make('date_debut')
+                ->required()
+                ->label('Date de début'),
+            Forms\Components\DatePicker::make('date_fin')
+                ->required()
+                ->label('Date de fin'),
+            Forms\Components\Textarea::make('description')
+                ->required()
+                ->label('Description'),
+            Forms\Components\Hidden::make('statut')
+                ->default('planifiee'),
+            Forms\Components\Hidden::make('user_createur_id')
+                ->default(fn () => auth()->id()),
+        ];
+    }
+
+    public function create(): void
+    {
+        $data = $this->form->getState();
+        
+        $maintenance = MaintenancePreventive::create($data);
+
+        Notification::make()
+            ->title('Maintenance préventive créée avec succès')
+            ->success()
+            ->send();
+
+        $this->dispatch('refresh-calendar');
     }
 }

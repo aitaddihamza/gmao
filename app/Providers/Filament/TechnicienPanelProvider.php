@@ -28,8 +28,11 @@ class TechnicienPanelProvider extends PanelProvider
             ->path('technicien')
             ->brandName('GMAO')
             ->plugins([FilamentFullCalendarPlugin::make()
-                    ->selectable()
-                    ->editable()
+                ->schedulerLicenseKey('')
+                ->selectable()
+                ->timezone(config('app.timezone'))
+                ->locale(config('app.locale'))
+                ->config([])
             ])
             ->colors([
                 'primary' => Color::Yellow,

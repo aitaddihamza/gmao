@@ -7,7 +7,6 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -32,8 +31,11 @@ class EngineerPanelProvider extends PanelProvider
                 'primary' => Color::Blue
             ])
             ->plugins([FilamentFullCalendarPlugin::make()
-                    ->selectable()
-                    ->editable()
+                ->schedulerLicenseKey('')
+                ->selectable()
+                ->timezone(config('app.timezone'))
+                ->locale(config('app.locale'))
+                ->config([])
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('1s')
@@ -46,12 +48,14 @@ class EngineerPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/SharedResources/Bloc'), for: 'App\\Filament\\SharedResources\\Bloc')
             -> discoverResources(in: app_path('Filament/SharedResources/MaintenanceCorrective'), for: 'App\\Filament\\SharedResources\\MaintenanceCorrective')
             ->discoverResources(in: app_path('Filament/SharedResources/TypeBloc'), for: 'App\\Filament\\SharedResources\\TypeBloc')
+            ->discoverPages(in: app_path('Filament/SharedPages/Pages'), for: 'App\\Filament\\SharedPages\\Pages')
             ->discoverPages(in: app_path('Filament/Engineer/Pages'), for: 'App\\Filament\\Engineer\\Pages')
             ->pages([
                 // Pages\Dashboard::class,
                 // \App\Filament\SharedPages\Pages\MaintenanceCorrectif::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Engineer/Widgets'), for: 'App\\Filament\\Engineer\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/SharedWidgets/Widgets'), for: 'App\\Filament\\SharedWidgets\\Widgets')
+            // ->discoverWidgets(in: app_path('Filament/Engineer/Widgets'), for: 'App\\Filament\\Engineer\\Widgets')
             ->widgets([
                 // Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,

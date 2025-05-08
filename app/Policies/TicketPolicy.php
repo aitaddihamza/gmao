@@ -33,7 +33,7 @@ class TicketPolicy
 
     public function delete(User $user, Ticket $ticket): bool
     {
-        return $user->id === $ticket->user_createur_id || $user->id === $ticket->user_assignee_id;
+        return $user->id === $ticket->user_createur_id;
     }
 
     public function update(User $user, Ticket $ticket): bool
