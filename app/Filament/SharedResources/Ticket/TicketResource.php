@@ -189,16 +189,17 @@ class TicketResource extends Resource
                 Forms\Components\Section::make('Rapport et Résolution')
                     ->schema([
                         Forms\Components\Select::make('equipement_etat')
-                            ->label('Etat de l\'equipement')
-                            ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif')
-                            ->required()
-                            ->preload()
-                            ->options([
-                                'bon' => 'Bon',
-                                'acceptable' => 'Acceptable',
-                                'mauvais' => 'Mauvais',
-                                'hors_service' => 'Hors service',
-                            ]),
+                        ->relationship('equipement', 'etat')
+                        ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif')
+                        ->searchable()
+                        ->required()
+                        ->preload()
+                        ->options([
+                            'bon' => 'Bon',
+                            'acceptable' => 'Acceptable',
+                            'mauvais' => 'Mauvais',
+                            'hors_service' => 'Hors service',
+                        ]),
                         Forms\Components\Textarea::make('diagnostic')
                             ->required()
                             ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif'),

@@ -74,16 +74,19 @@ class MaintenancePreventiveResource extends Resource
                             $set('date_realisation', now());
                         }
                     }),
-                Forms\Components\Select::make('equipement_etat')
-                    ->label('Etat de l\'equipement')
-                    ->hidden(fn (Forms\Get $get) => in_array($get('statut'), ['planifiee', 'en_attente', 'en_cours']))
+                    Forms\Components\Select::make('equipement_etat')
+                    ->relationship('equipement', 'etat')
+                    ->hidden(fn (Forms\Get $get) => $get('statut') != 'termine' && $get('statut') != 'annulee' && $get('statut') != 'reportee')
                     ->required()
+                    ->searchable()
+                    ->preload()
                     ->options([
                         'bon' => 'Bon',
                         'acceptable' => 'Acceptable',
                         'mauvais' => 'Mauvais',
                         'hors_service' => 'Hors service',
-                    ]),
+                    ])
+                    ->label('État de l\'equipemnet'),
                 Forms\Components\Toggle::make('type_externe')
                     ->label('Type externe ?')
                     ->reactive(),

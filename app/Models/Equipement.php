@@ -66,10 +66,6 @@ class Equipement extends Model
     }
 
     // Relations
-    public function tickets(): HasMany
-    {
-        return $this->hasMany(Ticket::class);
-    }
 
     public function bloc(): BelongsTo
     {

@@ -127,6 +127,7 @@ class EditTicket extends EditRecord
 
 
         $equipement = $this->getRecord()->equipement;
+        dd($equipement);
         $equipementEtat = $this->data['equipement_etat'];
         if ($equipementEtat) {
             $equipement->update(['etat' => $equipementEtat]);

@@ -75,7 +75,7 @@ class Ticket extends Model
     // Relations
     public function equipement(): BelongsTo
     {
-        return $this->belongsTo(Equipement::class);
+        return $this->belongsTo(Equipement::class, 'equipement_id');
     }
 
     public function createur(): BelongsTo
