@@ -74,6 +74,18 @@ class TicketResource extends Resource
                             ->required()
                             ->columnSpanFull(),
 
+                        Forms\Components\Select::make('gravite_panne')
+                            ->label('Gravité de la panne')
+                            ->options([
+                                'critique' => 'Critique - Arrêt total',
+                                'majeure' => 'Majeure - Fonctionnement dégradé',
+                                'mineure' => 'Mineure - Impact limité',
+                                'aucune' => 'Aucune - Fonctionnement normal',
+                            ])
+                            ->required()
+                            ->default('mineure')
+                            ->visible(fn (Forms\Get $get) => $get('type_ticket') === 'correctif'),
+
                         Forms\Components\Grid::make()
                             ->schema([
                                 Forms\Components\Textarea::make('recommandations')

@@ -58,11 +58,24 @@ class ShowTicket extends ViewRecord
                         TextEntry::make('description')
                             ->label('Description')
                             ->columnSpanFull(),
+                        TextEntry::make('gravite_panne')
+                            ->label('Gravité de la panne')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'critique' => 'danger',
+                                'majeure' => 'warning',
+                                'mineure' => 'info',
+                                'aucune' => 'success',
+                                default => 'gray',
+                            })
+                            ->visible(fn ($record) => $record->type_ticket === 'correctif'),
                         ImageEntry::make('chemin_image')
                             ->label('Images de panne')
                             ->columnSpanFull()
                             ->stacked()
-                            ->circular()
+                            ->circular(false)
+                            ->width('full')
+                            ->height(300)
                             ->visible(fn ($record) => $record->chemin_image !== null),
                     ]),
 

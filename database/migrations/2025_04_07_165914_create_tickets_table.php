@@ -15,19 +15,17 @@ return new class () extends Migration {
             $table->foreignId('equipement_id')->constrained('equipements')->onDelete('cascade');
             $table->foreignId('user_createur_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('user_assignee_id')->nullable()->constrained('users')->onDelete('cascade');
-            $table->dateTime('date_attribution')->nullable();
-            $table->dateTime('date_cloture')->nullable();
             $table->string('priorite');
             $table->text('description');
             $table->string('statut');
-            $table->integer('gravite_panne')->nullable();
+            $table->string('gravite_panne')->nullable();
             $table->string('type_ticket');
             $table->string('chemin_image')->nullable();
             // resent fields
             $table->text('solution')->nullable();
             $table->text('diagnostic')->nullable();
-            $table->dateTime('date_resolution')->nullable();
-            $table->dateTime('date_intervention')->nullable();
+            $table->dateTime('date_resolution')->nullable()->change();
+            $table->dateTime('date_intervention')->nullable()->change();
             $table->integer('temps_arret')->nullable();
             $table->boolean('type_externe')->default(false);
             $table->timestamps();

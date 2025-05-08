@@ -13,12 +13,12 @@ return new class () extends Migration {
         Schema::create('maintenances_preventives', function (Blueprint $table) {
             $table->id();
             $table->foreignId('equipement_id')->constrained();
-            $table->foreignId('user_id')->nullable()->constrained();
-            $table->date('date_planifiee');
-            $table->date('date_reelle')->nullable();
             $table->string('statut');
             $table->text('description');
-            $table->integer('periodicite_jours');
+            $table->foreignId('user_createur_id')->nullable()->constrained('users');
+            $table->foreignId('user_assignee_id')->nullable()->constrained('users');
+            $table->dateTime('date_debut')->nullable();
+            $table->dateTime('date_fin')->nullable();
             $table->boolean('type_externe')->default(false);
             $table->string('fournisseur')->nullable();
             $table->text('remarques')->nullable();

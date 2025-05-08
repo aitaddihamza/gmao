@@ -20,7 +20,6 @@ class Ticket extends Model
         'priorite',
         'description',
         'chemin_image',
-        'date_cloture',
         'solution',
         'diagnostic',
         'fournisseur',
@@ -28,12 +27,14 @@ class Ticket extends Model
         'recommandations',
         'date_intervention',
         'type_externe',
+        'gravite_panne',
         'temps_arret'
     ];
 
     protected $casts = [
         'date_creation' => 'datetime',
-        'date_cloture' => 'datetime',
+        'date_intervention' => 'datetime',
+        'date_resolution' => 'datetime',
         'chemin_image' => 'array',
     ];
 
