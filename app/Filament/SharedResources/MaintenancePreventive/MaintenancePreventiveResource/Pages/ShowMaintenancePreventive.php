@@ -4,18 +4,14 @@ namespace App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventi
 
 use App\Filament\SharedResources\MaintenancePreventive\MaintenancePreventiveResource;
 use Filament\Actions;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\ViewRecord;
-use Filament\Infolists\Infolist;
-use Filament\Infolists\Components\Section;
-use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\RepeatableEntry;
-use Filament\Infolists\Components\Actions as InfolistActions;
 use Illuminate\Support\Facades\Storage;
-use Filament\Infolists\Components\Actions\Action;
-use Filament\Actions as PageActions;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Carbon\Carbon;
 
-class ViewMaintenancePreventive extends ViewRecord
+class ShowMaintenancePreventive extends ViewRecord
 {
     protected static string $resource = MaintenancePreventiveResource::class;
 
@@ -23,13 +19,16 @@ class ViewMaintenancePreventive extends ViewRecord
     {
         return $infolist
             ->schema([
-                Section::make('Informations de base')
+                Infolists\Components\Section::make('Informations de base')
                     ->schema([
-                        TextEntry::make('equipement.designation')
+                        Infolists\Components\TextEntry::make('equipement.designation')
                             ->label('Équipement')
                             ->formatStateUsing(fn ($record) => $record->equipement?->designation . ' - ' . $record->equipement?->modele . ' - ' . $record->equipement?->marque)
                             ->columnSpanFull(),
-                        TextEntry::make('statut')
+                        Infolists\Components\TextEntry::make('typeMaintenance.nom')
+                            ->label('Type de maintenance')
+                            ->badge(),
+                        Infolists\Components\TextEntry::make('statut')
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
                                 'planifiee' => 'info',
@@ -39,62 +38,62 @@ class ViewMaintenancePreventive extends ViewRecord
                                 'reportee' => 'gray',
                                 'annulee' => 'danger',
                             }),
-                        TextEntry::make('type_externe')
+                        Infolists\Components\TextEntry::make('type_externe')
                             ->label('Type de maintenance')
                             ->getStateUsing(fn ($record) => $record->type_externe ? 'Externe' : 'Interne')
                             ->badge()
                             ->color(fn ($state) => $state === 'Externe' ? 'success' : 'warning'),
                     ])->columns(3),
 
-                Section::make('Détails de la maintenance')
+                Infolists\Components\Section::make('Détails de la maintenance')
                     ->schema([
-                        TextEntry::make('description')
+                        Infolists\Components\TextEntry::make('description')
                             ->label('Description')
                             ->markdown()
                             ->columnSpanFull(),
-                        TextEntry::make('date_debut')
-                            ->label('Date début')
-                            ->dateTime('d/m/Y H:i')
-                            ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->format('d/m/Y H:i') : '-'),
-                        TextEntry::make('date_fin')
-                            ->label('Date fin')
-                            ->dateTime('d/m/Y H:i')
-                            ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->format('d/m/Y H:i') : '-'),
-                        TextEntry::make('fournisseur')
+                        Infolists\Components\TextEntry::make('date_planifiee')
+                            ->label('Date planifiée')
+                            ->dateTime('d/m/Y H:i'),
+                        Infolists\Components\TextEntry::make('date_realisation')
+                            ->label('Date de réalisation')
+                            ->dateTime('d/m/Y H:i'),
+                        Infolists\Components\TextEntry::make('frequence')
+                            ->label('Fréquence'),
+                        Infolists\Components\TextEntry::make('fournisseur')
                             ->label('Fournisseur')
                             ->visible(fn ($record) => $record->type_externe),
                     ])->columns(2),
 
-                Section::make('Assignation')
+                Infolists\Components\Section::make('Assignation')
                     ->schema([
-                        TextEntry::make('createur.name')
+                        Infolists\Components\TextEntry::make('createur.name')
                             ->label('Créé par')
                             ->getStateUsing(fn ($record) => $record->createur?->name . ' ' . $record->createur?->prenom),
-                        TextEntry::make('assignee.name')
+                        Infolists\Components\TextEntry::make('assignee.name')
                             ->label('Assigné à')
                             ->getStateUsing(fn ($record) => $record->assignee?->name . ' ' . $record->assignee?->prenom),
                     ])->columns(2),
 
-                Section::make('Actions réalisées')
+                Infolists\Components\Section::make('Actions réalisées')
                     ->schema([
-                        TextEntry::make('actions_realisees')
+                        Infolists\Components\TextEntry::make('actions_realisees')
                             ->label('Actions réalisées')
                             ->markdown()
                             ->columnSpanFull(),
                     ])
                     ->visible(fn ($record) => $record->statut === 'termine'),
 
-                Section::make('Pièces utilisées')
+                Infolists\Components\Section::make('Pièces utilisées')
                     ->schema([
-                        RepeatableEntry::make('pieces')
+                        Infolists\Components\RepeatableEntry::make('pieces')
                             ->schema([
-                                TextEntry::make('designation')
+                                Infolists\Components\TextEntry::make('designation')
                                     ->label('Désignation'),
-                                TextEntry::make('pivot.quantite_utilisee')
+                                Infolists\Components\TextEntry::make('pivot.quantite_utilisee')
                                     ->label('Quantité utilisée'),
-                                TextEntry::make('reference')
+                                Infolists\Components\TextEntry::make('reference')
                                     ->label('Référence'),
-                                TextEntry::make('prix_unitaire')
+                                Infolists\Components\TextEntry::make('prix_unitaire')
                                     ->label('Prix unitaire')
                                     ->money('EUR'),
                             ])
@@ -102,22 +101,22 @@ class ViewMaintenancePreventive extends ViewRecord
                     ])
                     ->visible(fn ($record) => $record->pieces->isNotEmpty()),
 
-                Section::make('Rapport d\'intervention')
+                Infolists\Components\Section::make('Rapport d\'intervention')
                     ->schema([
-                        TextEntry::make('rapport_type')
+                        Infolists\Components\TextEntry::make('rapport_type')
                             ->label('Type de rapport')
                             ->badge()
                             ->formatStateUsing(fn ($state) => $state === 'manuel' ? 'Upload manuel' : 'Génération automatique')
                             ->visible(fn ($record) => $record->statut === 'termine'),
-                        InfolistActions::make([
-                            Action::make('view_rapport')
+                        Infolists\Components\Actions::make([
+                            Infolists\Components\Actions\Action::make('view_rapport')
                                 ->label('Voir le rapport')
                                 ->icon('heroicon-o-document-text')
                                 ->url(fn ($record) => $record->rapport_path ? Storage::url($record->rapport_path) : null)
                                 ->visible(fn ($record) => $record->rapport_path !== null && $record->statut === 'termine' && $record->rapport_type === 'manuel')
                                 ->color('primary')
                                 ->button(),
-                            Action::make('download_rapport')
+                            Infolists\Components\Actions\Action::make('download_rapport')
                                 ->label('Télécharger le rapport Word')
                                 ->icon('heroicon-o-arrow-down-tray')
                                 ->url(fn ($record) => $record->rapport_path ? Storage::url($record->rapport_path) : null)
@@ -132,17 +131,16 @@ class ViewMaintenancePreventive extends ViewRecord
             ]);
     }
 
-
     protected function getHeaderActions(): array
     {
         return [
-            PageActions\EditAction::make(),
-            PageActions\Action::make('close')
+            Actions\EditAction::make(),
+            Action::make('close')
                 ->label('Fermer')
-                ->url(route('filament.' . auth()->user()->role . '.resources.maintenance-preventive.index'))
+                ->url(route('filament.' . auth()->user()->role . '.resources.maintenance-preventives.index'))
                 ->icon('heroicon-o-x-circle')
                 ->color('danger')
         ];
     }
-
 }
+

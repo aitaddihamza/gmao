@@ -10,6 +10,13 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
+use Filament\Notifications\Notification;
+use App\Services\ReportService;
+use Illuminate\Support\Facades\Storage;
 
 class MaintenancePreventiveResource extends Resource
 {
@@ -57,13 +64,20 @@ class MaintenancePreventiveResource extends Resource
                         'planifiee' => 'Planifiée',
                         'en_attente' => 'En attente',
                         'en_cours' => 'En cours',
-                        'terminee' => 'Terminée',
+                        'termine' => 'Terminée',
                         'reportee' => 'Reportée',
                         'annulee' => 'Annulée',
-                    ]),
+                    ])
+                    ->default(fn ($record) => $record?->statut ?? 'planifiee')
+                    ->afterStateUpdated(function ($state, Forms\Set $set) {
+                        if ($state === 'termine') {
+                            $set('date_realisation', now());
+                        }
+                    }),
                 Forms\Components\Select::make('equipement_etat')
                     ->label('Etat de l\'equipement')
                     ->hidden(fn (Forms\Get $get) => in_array($get('statut'), ['planifiee', 'en_attente', 'en_cours']))
+                    ->required()
                     ->options([
                         'bon' => 'Bon',
                         'acceptable' => 'Acceptable',
@@ -160,6 +174,65 @@ class MaintenancePreventiveResource extends Resource
                             ' - Qté: ' . ($state['quantite_utilisee'] ?? '0');
                     })
                     ->disableLabel(false),
+                Section::make('Rapport d\'intervention')
+                    ->schema([
+                        Select::make('rapport_type')
+                            ->label('Type de rapport')
+                            ->options([
+                                'manuel' => 'Upload manuel',
+                                'auto' => 'Génération automatique',
+                            ])
+                            ->default('manuel')
+                            ->visible(fn (Forms\Get $get) => $get('statut') === 'termine')
+                            ->live()
+                            ->afterStateUpdated(function ($state, Forms\Set $set, $record) {
+                                if ($record && $record->rapport_path) {
+                                    $oldPath = $record->rapport_path;
+                                    if (Storage::disk('public')->exists($oldPath)) {
+                                        Storage::disk('public')->delete($oldPath);
+                                    }
+                                }
+                                $set('rapport_path', null);
+                            }),
+
+                        FileUpload::make('rapport_path')
+                            ->label('Rapport')
+                            ->directory('reports/maintenance')
+                            ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
+                            ->maxSize(5120)
+                            ->visible(fn (Forms\Get $get) => $get('statut') === 'termine' && $get('rapport_type') === 'manuel')
+                            ->required(fn (Forms\Get $get) => $get('statut') === 'termine' && $get('rapport_type') === 'manuel'),
+
+
+                        Textarea::make('actions_realisees')
+                            ->label('Actions réalisées')
+                            ->rows(3)
+                            ->visible(fn (Forms\Get $get) => $get('statut') === 'termine'),
+
+
+                        Forms\Components\Actions::make([
+                            Forms\Components\Actions\Action::make('generateReport')
+                                ->label('Générer le rapport')
+                                ->icon('heroicon-o-document-text')
+                                ->visible(fn (Forms\Get $get) => $get('statut') === 'termine' && $get('rapport_type') === 'auto')
+                                ->action(function ($record) {
+                                    $reportService = new ReportService();
+                                    $path = $reportService->generateMaintenancePreventiveReport($record, $record->equipement);
+
+                                    $record->update([
+                                        'rapport_path' => $path,
+                                        'rapport_type' => 'auto'
+                                    ]);
+
+                                    Notification::make()
+                                        ->title('Rapport généré avec succès')
+                                        ->success()
+                                        ->send();
+                                })
+                        ]),
+                    ])
+                    ->collapsible()
+                    ->visible(fn (Forms\Get $get) => $get('statut') === 'termine'),
             ]);
     }
 
@@ -205,7 +278,7 @@ class MaintenancePreventiveResource extends Resource
                         'planifiee' => 'info',
                         'en_attente' => 'warning',
                         'en_cours' => 'primary',
-                        'terminee' => 'success',
+                        'termine' => 'success',
                         'reportee' => 'gray',
                         'annulee' => 'danger',
                     }),

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Ticket;
 use App\Models\Bloc;
+use App\Models\MaintenancePreventive;
 use Illuminate\Notifications\Notifiable;
 use App\Models\TypeEquipement;
 use Illuminate\Support\Facades\Storage;
@@ -95,7 +96,7 @@ class Equipement extends Model
 
     public function maintenancePreventives(): HasMany
     {
-        return $this->hasMany(MaintenancePreventive::class, 'equipement_id');
+        return $this->hasMany(MaintenancePreventive::class);
     }
 
 }

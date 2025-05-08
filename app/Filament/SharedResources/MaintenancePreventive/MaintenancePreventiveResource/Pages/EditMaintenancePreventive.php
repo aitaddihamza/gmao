@@ -19,7 +19,6 @@ class EditMaintenancePreventive extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        // dd($this->getRecord()->equipement->etat);
         return [
             Actions\DeleteAction::make(),
         ];
