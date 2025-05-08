@@ -13,6 +13,7 @@ use Filament\Infolists\Components\Actions;
 use Carbon\Carbon;
 use Filament\Actions as PageActions;
 use Illuminate\Support\Facades\Storage;
+use Filament\Infolists\Components\Actions\Action;
 
 class ShowTicket extends ViewRecord
 {
@@ -120,7 +121,7 @@ class ShowTicket extends ViewRecord
                             ->formatStateUsing(fn ($state) => $state ? 'Externe' : 'Interne')
                             ->visible(fn ($record) => $record->type_ticket === 'correctif'),
                         TextEntry::make('temps_arret')
-                            ->label('temps d\'arrêt')
+                            ->label('Temps d\'arrêt')
                             ->getStateUsing(function ($record) {
                                 if ($record->date_intervention && $record->date_resolution) {
                                     $intervention = Carbon::parse($record->date_intervention);
@@ -132,15 +133,6 @@ class ShowTicket extends ViewRecord
                         TextEntry::make('fournisseur')
                             ->label('Fournisseur')
                             ->visible(fn ($record) => $record->type_ticket === 'correctif' && $record->type_externe),
-                        Actions::make([
-                            Actions\Action::make('view_rapport')
-                                ->label('Voir le rapport')
-                                ->icon('heroicon-o-document-text')
-                                ->url(fn ($record) => $record->rapport_path ? Storage::url($record->rapport_path) : null)
-                                ->visible(fn ($record) => $record->rapport_path !== null && $record->statut === 'cloture')
-                                ->color('primary')
-                                ->button(),
-                        ]),
                     ])->columns(2),
 
                 Section::make('Pièces utilisées')
@@ -157,6 +149,34 @@ class ShowTicket extends ViewRecord
                             ->columns(3)
                     ])
                     ->visible(fn ($record) => $record->type_ticket === 'correctif' && $record->pieces->isNotEmpty()),
+
+                Section::make('Rapport d\'intervention')
+                    ->schema([
+                        TextEntry::make('rapport_type')
+                            ->label('Type de rapport')
+                            ->badge()
+                            ->formatStateUsing(fn ($state) => $state === 'manuel' ? 'Upload manuel' : 'Génération automatique')
+                            ->visible(fn ($record) => $record->statut === 'cloture'),
+                        Actions::make([
+                            Action::make('view_rapport')
+                                ->label('Voir le rapport')
+                                ->icon('heroicon-o-document-text')
+                                ->url(fn ($record) => $record->rapport_path ? Storage::url($record->rapport_path) : null)
+                                ->visible(fn ($record) => $record->rapport_path !== null && $record->statut === 'cloture' && $record->rapport_type === 'manuel')
+                                ->color('primary')
+                                ->button(),
+                            Action::make('download_rapport')
+                                ->label('Télécharger le rapport Word')
+                                ->icon('heroicon-o-arrow-down-tray')
+                                ->url(fn ($record) => $record->rapport_path ? Storage::url($record->rapport_path) : null)
+                                ->visible(fn ($record) => $record->rapport_path !== null && $record->statut === 'cloture' && $record->rapport_type === 'auto')
+                                ->color('success')
+                                ->button(),
+                        ])
+                        ->columnSpanFull(),
+                    ])
+                    ->collapsible()
+                    ->visible(fn ($record) => $record->statut === 'cloture'),
             ]);
     }
 

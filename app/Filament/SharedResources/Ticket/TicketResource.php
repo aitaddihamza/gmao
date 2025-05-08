@@ -17,6 +17,8 @@ use Filament\Notifications\Notification;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Actions;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\ReportService;
 
 class TicketResource extends Resource
 {
@@ -229,56 +231,52 @@ class TicketResource extends Resource
                         Forms\Components\Select::make('rapport_type')
                             ->label('Type de rapport')
                             ->options([
-                                'manuel' => 'Télécharger un rapport',
-                                'auto' => 'Générer automatiquement',
+                                'manuel' => 'Upload manuel',
+                                'auto' => 'Génération automatique',
                             ])
                             ->default('manuel')
-                            ->reactive()
-                            ->visible(fn (Forms\Get $get) => $get('statut') === 'cloture'),
+                            ->visible(fn (Forms\Get $get) => $get('statut') === 'cloture')
+                            ->live()
+                            ->afterStateUpdated(function ($state, Forms\Set $set, $record) {
+                                if ($record && $record->rapport_path) {
+                                    $oldPath = $record->rapport_path;
+                                    if (Storage::disk('public')->exists($oldPath)) {
+                                        Storage::disk('public')->delete($oldPath);
+                                    }
+                                }
+                                $set('rapport_path', null);
+                            }),
                         Forms\Components\FileUpload::make('rapport_path')
-                            ->label('Rapport d\'intervention')
-                            ->directory('rapports')
-                            ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
-                            ->maxSize(10240)
-                            ->visible(fn (Forms\Get $get) => $get('statut') === 'cloture' && $get('rapport_type') === 'manuel'),
+                            ->label('Rapport')
+                            ->directory('reports')
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->maxSize(5120)
+                            ->visible(fn (Forms\Get $get) => $get('statut') === 'cloture' && $get('rapport_type') === 'manuel')
+                            ->required(fn (Forms\Get $get) => $get('statut') === 'cloture' && $get('rapport_type') === 'manuel'),
                         Forms\Components\Actions::make([
-                            Forms\Components\Actions\Action::make('generate_report')
+                            Forms\Components\Actions\Action::make('generateReport')
                                 ->label('Générer le rapport')
                                 ->icon('heroicon-o-document-text')
-                                ->action(function (Forms\Get $get, Forms\Set $set) {
-                                    $ticket = \App\Models\Ticket::find($get('id'));
-                                    if (!$ticket) {
-                                        return;
-                                    }
+                                ->visible(fn (Forms\Get $get) => $get('statut') === 'cloture' && $get('rapport_type') === 'auto')
+                                ->action(function ($record) {
+                                    $ticket = $record;
+                                    $equipement = $ticket->equipement;
+                                    $createur = $ticket->createur;
+                                    $assignee = $ticket->assignee;
 
-                                    // Générer le contenu du rapport
-                                    $content = view('reports.ticket', [
-                                        'ticket' => $ticket,
-                                        'equipement' => $ticket->equipement,
-                                        'createur' => $ticket->createur,
-                                        'assignee' => $ticket->assignee,
-                                        'pieces' => $ticket->pieces,
-                                    ])->render();
+                                    $reportService = new ReportService();
+                                    $path = $reportService->generateTicketReport($ticket, $equipement, $createur, $assignee);
 
-                                    // Créer le PDF
-                                    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($content);
-                                    
-                                    // Générer un nom de fichier unique
-                                    $filename = 'rapport_ticket_' . $ticket->id . '_' . now()->format('Y-m-d_His') . '.pdf';
-                                    $path = 'rapports/' . $filename;
-                                    
-                                    // Sauvegarder le PDF
-                                    Storage::put('public/' . $path, $pdf->output());
-                                    
-                                    // Mettre à jour le chemin du rapport
-                                    $set('rapport_path', $path);
-                                    
-                                    \Filament\Notifications\Notification::make()
+                                    $ticket->update([
+                                        'rapport_path' => $path,
+                                        'rapport_type' => 'auto'
+                                    ]);
+
+                                    Notification::make()
                                         ->title('Rapport généré avec succès')
                                         ->success()
                                         ->send();
                                 })
-                                ->visible(fn (Forms\Get $get) => $get('statut') === 'cloture' && $get('rapport_type') === 'auto'),
                         ]),
                         Forms\Components\Repeater::make('pieces_utilisees')
                             ->schema([

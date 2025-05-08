@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Storage;
 
 class Ticket extends Model
 {
@@ -21,6 +22,7 @@ class Ticket extends Model
         'description',
         'chemin_image',
         'rapport_path',
+        'rapport_type',
         'solution',
         'diagnostic',
         'fournisseur',
@@ -42,7 +44,33 @@ class Ticket extends Model
         'type_ticket' => 'string',
         'priorite' => 'string',
         'gravite_panne' => 'string',
+        'rapport_type' => 'string',
     ];
+
+    protected static function booted()
+    {
+        static::saving(function ($ticket) {
+            // Si le rapport_path a changé et qu'il y avait un ancien rapport
+            if ($ticket->isDirty('rapport_path') && $ticket->getOriginal('rapport_path')) {
+                $oldPath = $ticket->getOriginal('rapport_path');
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+
+            // Si les images ont changé et qu'il y avait d'anciennes images
+            if ($ticket->isDirty('chemin_image') && $ticket->getOriginal('chemin_image')) {
+                $oldImages = $ticket->getOriginal('chemin_image');
+                if (is_array($oldImages)) {
+                    foreach ($oldImages as $oldImage) {
+                        if (Storage::disk('public')->exists($oldImage)) {
+                            Storage::disk('public')->delete($oldImage);
+                        }
+                    }
+                }
+            }
+        });
+    }
 
     // Relations
     public function equipement(): BelongsTo

@@ -10,6 +10,7 @@ use App\Models\Ticket;
 use App\Models\Bloc;
 use Illuminate\Notifications\Notifiable;
 use App\Models\TypeEquipement;
+use Illuminate\Support\Facades\Storage;
 
 class Equipement extends Model
 {
@@ -42,6 +43,26 @@ class Equipement extends Model
         'date_fin_garantie' => 'date',
         'sous_contrat' => 'boolean'
     ];
+
+    protected static function booted()
+    {
+        static::saving(function ($equipement) {
+            // Si le manuel_path a changé et qu'il y avait un ancien manuel
+            if ($equipement->isDirty('manuel_path') && $equipement->getOriginal('manuel_path')) {
+                $oldPath = $equipement->getOriginal('manuel_path');
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+        });
+
+        static::deleting(function ($equipement) {
+            // Supprimer le manuel lors de la suppression de l'équipement
+            if ($equipement->manuel_path && Storage::disk('public')->exists($equipement->manuel_path)) {
+                Storage::disk('public')->delete($equipement->manuel_path);
+            }
+        });
+    }
 
     // Relations
     public function tickets(): HasMany
