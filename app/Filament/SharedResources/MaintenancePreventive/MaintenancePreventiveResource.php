@@ -75,11 +75,9 @@ class MaintenancePreventiveResource extends Resource
                         }
                     }),
                     Forms\Components\Select::make('equipement_etat')
-                    ->relationship('equipement', 'etat')
                     ->hidden(fn (Forms\Get $get) => $get('statut') != 'termine' && $get('statut') != 'annulee' && $get('statut') != 'reportee')
                     ->required()
                     ->searchable()
-                    ->preload()
                     ->options([
                         'bon' => 'Bon',
                         'acceptable' => 'Acceptable',

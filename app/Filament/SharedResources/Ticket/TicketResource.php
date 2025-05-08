@@ -189,11 +189,9 @@ class TicketResource extends Resource
                 Forms\Components\Section::make('Rapport et Résolution')
                     ->schema([
                         Forms\Components\Select::make('equipement_etat')
-                        ->relationship('equipement', 'etat')
-                        ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif')
+                        ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture')
                         ->searchable()
                         ->required()
-                        ->preload()
                         ->options([
                             'bon' => 'Bon',
                             'acceptable' => 'Acceptable',

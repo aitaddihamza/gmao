@@ -182,62 +182,68 @@ class ReportService
             }
 
             $phpWord = new PhpWord();
-            
+
             // Styles
             $phpWord->addTitleStyle(1, ['bold' => true, 'size' => 16], ['spaceAfter' => 240]);
             $phpWord->addTitleStyle(2, ['bold' => true, 'size' => 14], ['spaceAfter' => 120]);
-            
+
             $section = $phpWord->addSection();
-            
+
             // En-tête
             $section->addTitle('Rapport de maintenance préventive', 1);
             $section->addText('Maintenance #' . $maintenance->id, ['bold' => true, 'size' => 12]);
             $section->addText('Date de génération : ' . now()->format('d/m/Y H:i'), ['size' => 10]);
             $section->addTextBreak(2);
-            
+
             // Informations générales
             $section->addTitle('Informations générales', 2);
             $table = $section->addTable(['borderSize' => 6, 'borderColor' => '000000']);
-            
+
             $table->addRow();
             $table->addCell()->addText('Équipement', ['bold' => true]);
             $table->addCell()->addText($equipement->designation . ' - ' . $equipement->modele . ' - ' . $equipement->marque);
-            
-            $table->addRow();
-            $table->addCell()->addText('Date planifiée', ['bold' => true]);
-            $table->addCell()->addText($maintenance->date_planifiee?->format('d/m/Y H:i'));
-            
-            $table->addRow();
-            $table->addCell()->addText('Date de réalisation', ['bold' => true]);
-            $table->addCell()->addText($maintenance->date_realisation?->format('d/m/Y H:i'));
-            
+
             $table->addRow();
             $table->addCell()->addText('Statut', ['bold' => true]);
             $table->addCell()->addText(ucfirst($maintenance->statut));
-            
+
             $table->addRow();
-            $table->addCell()->addText('Fréquence', ['bold' => true]);
-            $table->addCell()->addText($maintenance->frequence);
-            
+            $table->addCell()->addText('Type de maintenance', ['bold' => true]);
+            $table->addCell()->addText($maintenance->type_externe ? 'Externe' : 'Interne');
+
+            $table->addRow();
+            $table->addCell()->addText('Date début', ['bold' => true]);
+            $table->addCell()->addText($maintenance->date_debut?->format('d/m/Y H:i') ?? '-');
+
+            $table->addRow();
+            $table->addCell()->addText('Date fin', ['bold' => true]);
+            $table->addCell()->addText($maintenance->date_fin?->format('d/m/Y H:i') ?? '-');
+
+            if ($maintenance->type_externe) {
+                $table->addRow();
+                $table->addCell()->addText('Fournisseur', ['bold' => true]);
+                $table->addCell()->addText($maintenance->fournisseur);
+            }
+
             $section->addTextBreak(2);
-            
+
             // Description
             $section->addTitle('Description', 2);
             $section->addText($maintenance->description);
             $section->addTextBreak(2);
-            
+
             // Actions réalisées
             if ($maintenance->actions_realisees) {
                 $section->addTitle('Actions réalisées', 2);
                 $section->addText($maintenance->actions_realisees);
                 $section->addTextBreak(2);
             }
-            
+
             // Pièces utilisées
             if ($maintenance->pieces->isNotEmpty()) {
                 $section->addTitle('Pièces utilisées', 2);
                 $table = $section->addTable(['borderSize' => 6, 'borderColor' => '000000']);
-                
+
                 // En-tête du tableau
                 $table->addRow();
                 $table->addCell()->addText('Désignation', ['bold' => true]);
@@ -245,7 +251,7 @@ class ReportService
                 $table->addCell()->addText('Quantité utilisée', ['bold' => true]);
                 $table->addCell()->addText('Prix unitaire', ['bold' => true]);
                 $table->addCell()->addText('Total', ['bold' => true]);
-                
+
                 $totalGeneral = 0;
                 foreach ($maintenance->pieces as $piece) {
                     $table->addRow();
@@ -257,38 +263,53 @@ class ReportService
                     $totalGeneral += $total;
                     $table->addCell()->addText(number_format($total, 2) . ' €');
                 }
-                
+
                 // Ligne du total
                 $table->addRow();
                 $table->addCell(null, ['gridSpan' => 4])->addText('Total général', ['bold' => true]);
                 $table->addCell()->addText(number_format($totalGeneral, 2) . ' €', ['bold' => true]);
-                
+
                 $section->addTextBreak(2);
             }
-            
-            // Pied de page
+
+            // Assignation
+            $section->addTitle('Assignation', 2);
+            $table = $section->addTable(['borderSize' => 6, 'borderColor' => '000000']);
+
+            $table->addRow();
+            $table->addCell()->addText('Créé par', ['bold' => true]);
+            $table->addCell()->addText($maintenance->createur?->name . ' ' . $maintenance->createur?->prenom);
+
+            if ($maintenance->assignee) {
+                $table->addRow();
+                $table->addCell()->addText('Assigné à', ['bold' => true]);
+                $table->addCell()->addText($maintenance->assignee?->name . ' ' . $maintenance->assignee?->prenom);
+            }
+
             $section->addTextBreak(2);
+
+            // Pied de page
             $section->addText('Ce rapport a été généré automatiquement par le système GMAO', ['size' => 8, 'italic' => true]);
             $section->addText('© ' . date('Y') . ' - Tous droits réservés', ['size' => 8, 'italic' => true]);
-            
+
             // Sauvegarde du document
             $filename = 'rapport_maintenance_' . $maintenance->id . '_' . now()->format('Y-m-d_His') . '.docx';
             $path = $directory . '/' . $filename;
-            
+
             $tempFile = tempnam(sys_get_temp_dir(), 'PHPWord');
             $objWriter = IOFactory::createWriter($phpWord, 'Word2007');
             $objWriter->save($tempFile);
-            
+
             // Copier le fichier temporaire vers le stockage
             Storage::disk('public')->put($path, file_get_contents($tempFile));
-            
+
             // Nettoyer le fichier temporaire
             @unlink($tempFile);
-            
+
             return $path;
         } catch (\Exception $e) {
             \Log::error('Erreur lors de la génération du rapport : ' . $e->getMessage());
             throw $e;
         }
     }
-} 
+}

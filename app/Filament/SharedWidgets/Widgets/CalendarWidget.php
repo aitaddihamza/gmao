@@ -83,11 +83,13 @@ class CalendarWidget extends FullCalendarWidget
             Forms\Components\DatePicker::make('date_debut')
                 ->label('Date de début')
                 ->required()
+                ->minDate(now())
                 ->default(fn ($record, array $arguments) => Carbon::parse($arguments['start'])->format('Y-m-d H:i:s') ?? $record->date_debut)
                 ->displayFormat('Y-m-d H:i:s')
                 ->placeholder('Sélectionner une date de début'),
             Forms\Components\DatePicker::make('date_fin')
                 ->label('Date de fin')
+                ->minDate(now())
                 ->required()
                 ->default(fn ($record, array $arguments) => $arguments['end'] ?? $record->date_fin)
                 ->displayFormat('Y-m-d H:i:s')
