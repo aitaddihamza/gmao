@@ -45,4 +45,3 @@ class UserStatsWidget extends BaseWidget
         ];
     }
 }
-
