@@ -209,6 +209,8 @@ class TicketResource extends Resource
                         Forms\Components\DateTimePicker::make('date_resolution')
                             ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif')
                             ->label('date de résolution')
+                            // doit être supérieur de la date_intervention
+                            ->minDate(fn (Forms\Get $get) => $get('date_intervention'))
                             ->required()
                             ->seconds(false)
                             ->displayFormat('d/m/Y H:i'),
