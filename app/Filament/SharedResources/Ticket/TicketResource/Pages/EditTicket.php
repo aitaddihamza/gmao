@@ -46,7 +46,7 @@ class EditTicket extends EditRecord
             $userRole = $assignee->role;
             $url = route("filament.".$userRole.".resources.tickets.show", $ticket->id);
 
-            if ($assignee) {
+            if ($assignee && $assignee->id != auth()->user()->id) {
                 Notification::make()
                     ->title('Ticket Assigné')
                     ->body("Vous avez été assigné au ticket ID: {$ticket->id} pour l'équipement {$ticket->equipement->designation}.")

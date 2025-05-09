@@ -106,7 +106,7 @@ class EditMaintenancePreventive extends EditRecord
         $record->load('pieces'); // Reload the record to reflect the changes
 
         $technicienResponsable = $this->getRecord()->assignee;
-        if (isset($technicienResponsable)) {
+        if (isset($technicienResponsable) && $technicienResponsable->id  != auth()->id()) {
             $userRole = $technicienResponsable->role;
             Notification::make()
                 ->title('Maintenance Preventive Planifiée')
