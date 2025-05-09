@@ -31,6 +31,7 @@ class ResponsablePanelProvider extends PanelProvider
             ->brandLogo(asset('favicon.svg'))
             ->brandLogoHeight('3rem')
             ->databaseNotifications()
+            ->databaseNotificationsPolling('1s')
             ->plugins([FilamentFullCalendarPlugin::make()
                     ->selectable()
                     ->editable()

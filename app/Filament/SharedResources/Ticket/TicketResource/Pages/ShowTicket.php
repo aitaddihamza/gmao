@@ -28,6 +28,27 @@ class ShowTicket extends ViewRecord
                         TextEntry::make('equipement.designation')
                             ->label('Équipement')
                             ->columnSpanFull(),
+                        // l'état de l'équipement
+                        TextEntry::make('equipement.etat')
+                            ->label('État de l\'équipement')
+                            ->getStateUsing(fn ($record) => $record->equipement?->etat)
+                            ->badge()
+                            ->color(fn ($state) => match ($state) {
+                                'en_service' => 'success',
+                                'hors_service' => 'danger',
+                                'en_maintenance' => 'warning',
+                                default => 'gray',
+                            }),
+                        TextEntry::make('bloc.localisation')
+                            ->label('Localisation de l\'équipement')
+                            ->getStateUsing(fn ($record) => $record->equipement?->bloc->localisation)
+                            ->badge()
+                            ->color('secondary'),
+                        TextEntry::make('bloc.nom')
+                            ->label('Nom du bloc')
+                            ->getStateUsing(fn ($record) => $record->equipement?->bloc->nom)
+                            ->badge()
+                            ->color('secondary'),
                         TextEntry::make('type_ticket')
                             ->label('Type de ticket')
                             ->badge()

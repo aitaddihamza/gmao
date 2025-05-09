@@ -34,6 +34,7 @@ class DirecteurPanelProvider extends PanelProvider
                     ->editable()
             ])
             ->databaseNotifications()
+            ->databaseNotificationsPolling('1s')
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -51,6 +52,7 @@ class DirecteurPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Majeur/Widgets'), for: 'App\\Filament\\Majeur\\Widgets')
             ->discoverPages(in: app_path('Filament/SharedPages/Pages'), for: 'App\\Filament\\SharedPages\\Pages')
             ->discoverPages(in: app_path('Filament/SharedPages/Pages'), for: 'App\\Filament\\SharedPages\\Pages')
+            ->discoverPages(in: app_path('Filament/SharedWidgets/Widgets'), for: 'App\\Filament\\SharedWidgets\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
@@ -71,4 +73,7 @@ class DirecteurPanelProvider extends PanelProvider
                 Authenticate::class,
             ]);
     }
+
+
+    
 }

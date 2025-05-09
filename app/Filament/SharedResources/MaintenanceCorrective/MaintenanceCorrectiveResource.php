@@ -89,6 +89,10 @@ class MaintenanceCorrectiveResource extends Resource
                     })
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('date_intervention')
+                    ->label('Date de intervention')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('date_resolution')
                     ->label('Date de résolution')
                     ->dateTime('d/m/Y H:i')
@@ -96,14 +100,7 @@ class MaintenanceCorrectiveResource extends Resource
 
                 Tables\Columns\TextColumn::make('temps_arret')
                     ->label('Temps d\'arrêt')
-                    ->getStateUsing(function ($record) {
-                        if ($record->date_intervention && $record->date_resolution) {
-                            $intervention = Carbon::parse($record->date_intervention);
-                            $resolution = Carbon::parse($record->date_resolution);
-                            return $intervention->diffInHours($resolution) . ' heures';
-                        }
-                        return 'Non calculé';
-                    })
+                    ->getStateUsing(fn ($record) => $record->temps_arret ? $record->temps_arret . " heures" : '')
                     ->sortable(),
             ])
             ->filters([

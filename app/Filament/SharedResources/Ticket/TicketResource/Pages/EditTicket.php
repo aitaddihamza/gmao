@@ -132,7 +132,9 @@ class EditTicket extends EditRecord
         }
 
         if ($ticket->type_ticket == "correctif") {
-            $equipement = $ticket->equipement;
+            // le temps arret = $date_resolution - date d'intervention
+            $temps_arret = $ticket->date_resolution->diffInHours($ticket->date_intervention);
+            $ticket->update(['temps_arret' => $temps_arret]);
             // notifier tous les utilisateurs n'import qeul role par ce panne de ce équipement
             foreach (User::all() as $user) {
                 if ($user->role == 'admin' || $user->id == auth()->user()->id || $ticket->user_assignee_id == $user->id) {
@@ -151,7 +153,23 @@ class EditTicket extends EditRecord
             }
         }
 
+        // Automatically generate the report if the type is 'auto'
+        if ($ticket->rapport_type === 'auto') {
+            $reportService = new \App\Services\ReportService();
+            $path = $reportService->generateTicketReport(
+                $ticket,
+                $ticket->equipement,
+                $ticket->createur,
+                $ticket->assignee
+            );
 
+            $ticket->update(['rapport_path' => $path]);
+
+            \Filament\Notifications\Notification::make()
+                ->title('Rapport généré automatiquement')
+                ->success()
+                ->send();
+        }
     }
 
     protected function mutateFormDataBeforeSave(array $data): array

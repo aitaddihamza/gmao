@@ -95,4 +95,15 @@ class Equipement extends Model
         return $this->hasMany(MaintenancePreventive::class);
     }
 
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
+    public function mainteanceCorrectives(): HasMany
+    {
+        return $this->hasMany(Ticket::class)->where('type_ticket', 'correctif');
+    }
+
+
 }

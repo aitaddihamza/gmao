@@ -163,23 +163,6 @@ class EquipementResource extends Resource
                 Tables\Columns\TextColumn::make('etat')
                     ->badge()
                     ->color(function ($state, $record) {
-                        // Récupérer les maintenances préventives liées
-                        $maintenances = $record->maintenancePreventives;
-                        // Date d'aujourd'hui
-                        $today = Carbon::now()->toDateString();
-
-                        foreach ($maintenances as $mp) {
-                            if ($mp->date_planifiee && Carbon::parse($mp->date_planifiee)->toDateString() === $today) {
-                                // Mettre à jour l'état uniquement s'il n'est pas déjà à 'hors_service'
-                                if ($record->etat !== 'hors_service') {
-                                    $record->update(['etat' => 'hors_service']);
-                                }
-
-                                $state = 'hors_service'; // Forcer l'affichage aussi
-                                break;
-                            }
-                        }
-
                         return match ($state) {
                             'bon', 'acceptable' => 'success',
                             'mauvais', 'hors_service' => 'danger',
@@ -241,12 +224,6 @@ class EquipementResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\BulkAction::make('exporterPDF')
-                        ->label('Exporter PDF')
-                        ->icon('heroicon-o-document-arrow-down')
-                        ->action(function ($records) {
-                            // Logique d'export PDF
-                        })
                 ]),
             ])
             ->defaultSort('updated_at', 'desc');

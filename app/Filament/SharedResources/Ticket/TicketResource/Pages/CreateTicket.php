@@ -36,7 +36,6 @@ class CreateTicket extends CreateRecord
             }
         }
 
-
         // Vérifier si nous avons des pièces à synchroniser
         if (isset($this->pieces)) {
             // Préparer les données des pièces pour la synchronisation
@@ -58,17 +57,16 @@ class CreateTicket extends CreateRecord
 
             // Synchroniser les pièces avec l'enregistrement de maintenance
             $ticket->pieces()->sync($pieceData);
-            // le temps arret = $date_resolution - date d'intervention
-            $temps_arret = $ticket->date_resolution->diffInHours($ticket->date_intervention);
-            $ticket->temps_arret = $temps_arret;
         }
 
         // change l'état de l'équipement
         if ($ticket->type_ticket == "correctif") {
+            // le temps arret = $date_resolution - date d'intervention
+            $temps_arret = $ticket->date_resolution->diffInHours($ticket->date_intervention);
+            $ticket->temps_arret = $temps_arret;
             $equipement = $ticket->equipement;
             $equipement->update(['etat' => 'hors_service']);
             // dd($equipement);
-            // notifier tous les utilisateurs n'import qeul role par ce panne de ce équipement
             foreach (User::all() as $user) {
                 if ($user->role == 'admin' || $user->id == auth()->user()->id || $ticket->user_assignee_id == $user->id) {
                     continue;
@@ -84,6 +82,24 @@ class CreateTicket extends CreateRecord
                     ])
                     ->sendToDatabase($user);
             }
+        }
+
+        // Automatically generate the report if the type is 'auto'
+        if ($ticket->rapport_type === 'auto') {
+            $reportService = new \App\Services\ReportService();
+            $path = $reportService->generateTicketReport(
+                $ticket,
+                $ticket->equipement,
+                $ticket->createur,
+                $ticket->assignee
+            );
+
+            $ticket->update(['rapport_path' => $path]);
+
+            \Filament\Notifications\Notification::make()
+                ->title('Rapport généré automatiquement')
+                ->success()
+                ->send();
         }
     }
 

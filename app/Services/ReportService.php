@@ -46,6 +46,10 @@ class ReportService
         $table->addCell()->addText(ucfirst($ticket->type_ticket));
         
         $table->addRow();
+        $table->addCell()->addText('Etat de l\'equipemnet', ['bold' => true]);
+        $table->addCell()->addText(ucfirst($equipement->etat));
+
+        $table->addRow();
         $table->addCell()->addText('Priorité', ['bold' => true]);
         $table->addCell()->addText(ucfirst($ticket->priorite));
         
@@ -116,24 +120,15 @@ class ReportService
             $table->addCell()->addText('Référence', ['bold' => true]);
             $table->addCell()->addText('Quantité utilisée', ['bold' => true]);
             $table->addCell()->addText('Prix unitaire', ['bold' => true]);
-            $table->addCell()->addText('Total', ['bold' => true]);
             
-            $totalGeneral = 0;
             foreach ($ticket->pieces as $piece) {
                 $table->addRow();
                 $table->addCell()->addText($piece->designation);
                 $table->addCell()->addText($piece->reference);
                 $table->addCell()->addText($piece->pivot->quantite_utilisee);
                 $table->addCell()->addText(number_format($piece->prix_unitaire, 2) . ' €');
-                $total = $piece->prix_unitaire * $piece->pivot->quantite_utilisee;
-                $totalGeneral += $total;
-                $table->addCell()->addText(number_format($total, 2) . ' €');
             }
             
-            // Ligne du total
-            $table->addRow();
-            $table->addCell(null, ['gridSpan' => 4])->addText('Total général', ['bold' => true]);
-            $table->addCell()->addText(number_format($totalGeneral, 2) . ' €', ['bold' => true]);
             
             $section->addTextBreak(2);
         }
@@ -204,6 +199,11 @@ class ReportService
             $table->addCell()->addText($equipement->designation . ' - ' . $equipement->modele . ' - ' . $equipement->marque);
 
             $table->addRow();
+            $table->addCell()->addText('Etat de l\'equipemnet', ['bold' => true]);
+            $table->addCell()->addText(ucfirst($equipement->etat));
+
+
+            $table->addRow();
             $table->addCell()->addText('Statut', ['bold' => true]);
             $table->addCell()->addText(ucfirst($maintenance->statut));
 
@@ -250,9 +250,7 @@ class ReportService
                 $table->addCell()->addText('Référence', ['bold' => true]);
                 $table->addCell()->addText('Quantité utilisée', ['bold' => true]);
                 $table->addCell()->addText('Prix unitaire', ['bold' => true]);
-                $table->addCell()->addText('Total', ['bold' => true]);
 
-                $totalGeneral = 0;
                 foreach ($maintenance->pieces as $piece) {
                     $table->addRow();
                     $table->addCell()->addText($piece->designation);
@@ -260,14 +258,8 @@ class ReportService
                     $table->addCell()->addText($piece->pivot->quantite_utilisee);
                     $table->addCell()->addText(number_format($piece->prix_unitaire, 2) . ' €');
                     $total = $piece->prix_unitaire * $piece->pivot->quantite_utilisee;
-                    $totalGeneral += $total;
-                    $table->addCell()->addText(number_format($total, 2) . ' €');
                 }
 
-                // Ligne du total
-                $table->addRow();
-                $table->addCell(null, ['gridSpan' => 4])->addText('Total général', ['bold' => true]);
-                $table->addCell()->addText(number_format($totalGeneral, 2) . ' €', ['bold' => true]);
 
                 $section->addTextBreak(2);
             }

@@ -36,7 +36,6 @@ class PieceResource extends Resource
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('prix_unitaire')
-                    ->required()
                     ->numeric(),
 
                 Forms\Components\FileUpload::make('manuel_path')

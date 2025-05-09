@@ -68,12 +68,7 @@ class TicketResource extends Resource
                             ])
                             ->required()
                             ->default('nouveau')
-                            ->live()
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                if ($state === 'cloture') {
-                                    $set('date_resolution', now());
-                                }
-                            }),
+                            ->live(),
                     ]),
 
                 Forms\Components\Section::make('Détails du problème')
@@ -207,7 +202,6 @@ class TicketResource extends Resource
                             ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif'),
                         Forms\Components\DateTimePicker::make('date_intervention')
                             ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif')
-                            ->default(null)
                             ->required()
                             ->seconds(false)
                             ->displayFormat('d/m/Y H:i')
@@ -216,10 +210,8 @@ class TicketResource extends Resource
                             ->hidden(fn (Forms\Get $get) => $get('statut') != 'cloture' || $get('type_ticket') != 'correctif')
                             ->label('date de résolution')
                             ->required()
-                            ->default(null)
                             ->seconds(false)
-                            ->displayFormat('d/m/Y H:i')
-                            ->dehydrateStateUsing(fn ($state) => $state ? now()->parse($state) : null),
+                            ->displayFormat('d/m/Y H:i'),
                         Forms\Components\Toggle::make('type_externe')
                             ->label('Intervention est externe ?')
                             ->reactive()
@@ -252,31 +244,6 @@ class TicketResource extends Resource
                             ->maxSize(5120)
                             ->visible(fn (Forms\Get $get) => $get('statut') === 'cloture' && $get('rapport_type') === 'manuel')
                             ->required(fn (Forms\Get $get) => $get('statut') === 'cloture' && $get('rapport_type') === 'manuel'),
-                        Forms\Components\Actions::make([
-                            Forms\Components\Actions\Action::make('generateReport')
-                                ->label('Générer le rapport')
-                                ->icon('heroicon-o-document-text')
-                                ->visible(fn (Forms\Get $get) => $get('statut') === 'cloture' && $get('rapport_type') === 'auto')
-                                ->action(function ($record) {
-                                    $ticket = $record;
-                                    $equipement = $ticket->equipement;
-                                    $createur = $ticket->createur;
-                                    $assignee = $ticket->assignee;
-
-                                    $reportService = new ReportService();
-                                    $path = $reportService->generateTicketReport($ticket, $equipement, $createur, $assignee);
-
-                                    $ticket->update([
-                                        'rapport_path' => $path,
-                                        'rapport_type' => 'auto'
-                                    ]);
-
-                                    Notification::make()
-                                        ->title('Rapport généré avec succès')
-                                        ->success()
-                                        ->send();
-                                })
-                        ]),
                         Forms\Components\Repeater::make('pieces_utilisees')
                             ->schema([
                                 Forms\Components\Select::make('piece_id')

@@ -29,6 +29,22 @@ class ViewMaintenancePreventive extends ViewRecord
                             ->label('Équipement')
                             ->formatStateUsing(fn ($record) => $record->equipement?->designation . ' - ' . $record->equipement?->modele . ' - ' . $record->equipement?->marque)
                             ->columnSpanFull(),
+                        // l'état de l'équipement
+                        TextEntry::make('equipement.etat')
+                            ->label('État de l\'équipement')
+                            ->getStateUsing(fn ($record) => $record->equipement?->etat)
+                            ->badge()
+                            ->color(fn ($state) => match ($state) {
+                                'en_service' => 'success',
+                                'hors_service' => 'danger',
+                                'en_maintenance' => 'warning',
+                                default => 'gray',
+                            }),
+                        TextEntry::make('bloc.localisation')
+                            ->label('Localisation de l\'équipement')
+                            ->getStateUsing(fn ($record) => $record->equipement?->bloc->localisation)
+                            ->badge()
+                            ->color('secondary'),
                         TextEntry::make('statut')
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {

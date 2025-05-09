@@ -52,10 +52,10 @@ class MaintenancePreventiveResource extends Resource
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . ' ' . $record->prenom . ' - ' . $record->role),
                 Forms\Components\DateTimePicker::make('date_debut')
                     ->required()
-                    ->minDate(now())
+                   
                     ->label('Date de début'),
                 Forms\Components\DateTimePicker::make('date_fin')
-                    ->minDate(now())
+               
                     ->label('Date de fin'),
                 Forms\Components\Select::make('statut')
                     ->required()

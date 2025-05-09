@@ -17,7 +17,16 @@ use Illuminate\Support\Facades\Log;
 class CalendarWidget extends FullCalendarWidget
 {
     public Model | string | null $model = MaintenancePreventive::class;
+    
+    // Variable pour forcer le rafraichissement
+    public $refreshCalendar = false;
 
+    // Méthode pour forcer le rafraîchissement du calendrier
+    public function refreshCalendar()
+    {
+        $this->refreshCalendar = !$this->refreshCalendar;
+        $this->js('window.dispatchEvent(new Event("filament-full-calendar::refresh"))');
+    }
 
     protected function headerActions(): array
     {
@@ -42,7 +51,12 @@ class CalendarWidget extends FullCalendarWidget
                         ]);
                     }
                 )
-                ->after(function (MaintenancePreventive $record) {
+                ->action(function (array $data, Forms\Form $form): void {
+                    // Créer l'enregistrement
+                    $record = new MaintenancePreventive($data);
+                    $record->save();
+                    
+                    // Envoyer la notification
                     try {
                         Log::info('Tentative d\'envoi de notification pour la maintenance: ' . $record->id);
 
@@ -71,6 +85,15 @@ class CalendarWidget extends FullCalendarWidget
                     } catch (\Exception $e) {
                         Log::error('Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
                     }
+                    
+                    // Rafraîchir le calendrier directement
+                    $this->refreshCalendar();
+                    
+                    // Notification de succès
+                    Notification::make()
+                        ->title('Maintenance créée avec succès')
+                        ->success()
+                        ->send();
                 })
         ];
     }
@@ -83,13 +106,13 @@ class CalendarWidget extends FullCalendarWidget
             Forms\Components\DatePicker::make('date_debut')
                 ->label('Date de début')
                 ->required()
-                ->minDate(now())
+              
                 ->default(fn ($record, array $arguments) => Carbon::parse($arguments['start'])->format('Y-m-d H:i:s') ?? $record->date_debut)
                 ->displayFormat('Y-m-d H:i:s')
                 ->placeholder('Sélectionner une date de début'),
             Forms\Components\DatePicker::make('date_fin')
                 ->label('Date de fin')
-                ->minDate(now())
+                
                 ->required()
                 ->default(fn ($record, array $arguments) => $arguments['end'] ?? $record->date_fin)
                 ->displayFormat('Y-m-d H:i:s')
@@ -143,7 +166,7 @@ class CalendarWidget extends FullCalendarWidget
                             'date_debut' =>  Carbon::parse($arguments['event']['start'])->format('Y-m-d H:i:s'),
                             'date_fin' => Carbon::parse($arguments['event']['end'])->format('Y-m-d H:i:s'),
                             'description' => $record->description ?? null,
-                            'equipement_id' => $arguments['event']['equipement_id'] ?? null,
+                            'equipement_id' => $arguments['event']['extendedProps']['equipement_id'] ?? null,
                             'user_createur_id' => auth()->id(),
                             'type_externe' => $record->type_externe ?? false,
                             'statut' => $record->statut ?? 'planifiee',
@@ -152,7 +175,11 @@ class CalendarWidget extends FullCalendarWidget
                         ]);
                     }
                 )
-                ->after(function (MaintenancePreventive $record) {
+                ->action(function (array $data, MaintenancePreventive $record): void {
+                    // Mettre à jour l'enregistrement
+                    $record->update($data);
+                    
+                    // Envoyer la notification
                     try {
                         Log::info('Tentative d\'envoi de notification pour la maintenance: ' . $record->id);
 
@@ -164,8 +191,8 @@ class CalendarWidget extends FullCalendarWidget
                             Log::info('Rôle du technicien: ' . $userRole);
 
                             $notification = Notification::make()
-                                ->title('Maintenance Preventive Planifiée')
-                                ->body("Vous êtes affecté à une nouvelle maintenance préventive planifiée")
+                                ->title('Maintenance Preventive Modifiée')
+                                ->body("Une maintenance préventive a été modifiée")
                                 ->success()
                                 ->actions([
                                     Action::make('Voir plus')
@@ -181,6 +208,15 @@ class CalendarWidget extends FullCalendarWidget
                     } catch (\Exception $e) {
                         Log::error('Erreur lors de l\'envoi de la notification: ' . $e->getMessage());
                     }
+                    
+                    // Rafraîchir le calendrier directement
+                    $this->refreshCalendar();
+                    
+                    // Notification de succès
+                    Notification::make()
+                        ->title('Maintenance mise à jour avec succès')
+                        ->success()
+                        ->send();
                 })
         ];
     }
@@ -245,6 +281,7 @@ class CalendarWidget extends FullCalendarWidget
                 ->extendedProps([
                     'statut' => $mp->statut,
                     'isCreator' => $mp->user_createur_id == auth()->id(),
+                    'equipement_id' => $mp->equipement_id,
                 ])
             )
             ->toArray();
@@ -271,7 +308,20 @@ class CalendarWidget extends FullCalendarWidget
                 'hour12' => false,
             ],
             'editable' => true,
-            'selectable' => true,
+            'selectable' => true, 
+            'selectMirror' => true,
+            'select' => 'function(info) {
+                $wire.dispatch("open-modal", { id: "create-maintenance", arguments: { start: info.startStr, end: info.endStr } });
+            }',
+            'eventDidMount' => $this->eventDidMount(),
         ];
+    }
+    
+    protected function getListeners(): array
+    {
+        return array_merge(parent::getListeners(), [
+            'echo:*.MaintenancePreventiveCreated,MaintenancePreventiveCreated' => 'refreshCalendar',
+            'echo:*.MaintenancePreventiveUpdated,MaintenancePreventiveUpdated' => 'refreshCalendar',
+        ]);
     }
 }

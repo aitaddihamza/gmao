@@ -14,6 +14,7 @@ class CreateMaintenancePreventive extends CreateRecord
 
 
 
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (isset($data['pieces_utilisees'])) {
@@ -65,6 +66,9 @@ class CreateMaintenancePreventive extends CreateRecord
                 ])
                 ->sendToDatabase($technicienResponsable);
         }
+
+
+
 
     }
 }
