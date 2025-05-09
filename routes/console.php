@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
-use App\Models\Equipement;
 use App\Jobs\UpdateEquipementStatus;
 
 
@@ -14,13 +13,14 @@ Artisan::command('inspire', function () {
 
 
 
-// mettre à jour l'état de la premier 'équipement par l'état très mauvaise
 
-// Schedule::call(function () {
-//     $equipement = \App\Models\Equipement::first();
-//     $equipement->update(['etat' => 'hello world']);
-// })->everyMinute(); // Changez la fréquence selon vos besoins
-
-if (Schema::hasTable('equipements')) {
-    Schedule::job(new \App\Jobs\UpdateEquipementStatus())->daily();
-}
+Schedule::when(function () {
+    try {
+        return Schema::hasTable('equipements');
+    } catch (\Throwable $e) {
+        // Prevent crash during migration
+        return false;
+    }
+}, function () {
+    Schedule::job(new UpdateEquipementStatus())->daily();
+});
