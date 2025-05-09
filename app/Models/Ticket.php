@@ -35,7 +35,6 @@ class Ticket extends Model
     ];
 
     protected $casts = [
-        'date_creation' => 'datetime',
         'date_intervention' => 'datetime',
         'date_resolution' => 'datetime',
         'chemin_image' => 'array',

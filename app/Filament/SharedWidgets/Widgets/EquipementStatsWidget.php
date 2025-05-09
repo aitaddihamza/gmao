@@ -3,57 +3,102 @@
 namespace App\Filament\SharedWidgets\Widgets;
 
 use App\Models\Equipement;
-use App\Models\Piece;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Carbon;
 
 class EquipementStatsWidget extends BaseWidget
 {
+    public ?Equipement $equipement = null;
     protected static ?string $pollingInterval = '30s';
 
     protected function getStats(): array
     {
-        $total_equipements = Equipement::count();
-        $hors_services = Equipement::where('etat', 'hors_service')->count();
-        // total des équipements bon et acceptable
-        $bons = Equipement::whereIn('etat', ['bon', 'acceptable'])->count();
-        // total des pieces
-        $pieces = Piece::count();
+        if (!$this->equipement) {
+            return [];
+        }
 
+        $totalPannes = $this->equipement->mainteanceCorrectives->count();
+        $ticketsCorrectifs = $this->equipement->mainteanceCorrectives;
+
+        // Calcul de la moyenne des temps d'arrêt (en heures)
+        $moyenneTempsArret = $ticketsCorrectifs->avg('temps_arret');
+        $tempsArretFormatted = $moyenneTempsArret ? number_format($moyenneTempsArret, 1) . ' h' : 'N/A';
+
+        // Temps d'arrêt total
+        $totalTempsArret = $ticketsCorrectifs->sum('temps_arret');
+        $totalTempsArretFormatted = $totalTempsArret ? number_format($totalTempsArret, 1) . ' h' : 'N/A';
+
+        // Nombre de pannes cette année
+        $pannesCetteAnnee = $this->equipement->mainteanceCorrectives()
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        // Temps moyen entre pannes (MTBF - Mean Time Between Failures)
+        $mtbf = $this->calculateMTBF();
+        $mtbfFormatted = $mtbf ? $mtbf . ' jours' : 'N/A';
+
+        // Tickets ouverts
+        $ticketsOuverts = $this->equipement->tickets()
+            ->where('statut', '!=', 'cloture')
+            ->count();
 
         return [
-            Stat::make('Total des équipements', $total_equipements)
-                ->description('Équipements enregistrés')
-                ->descriptionIcon('heroicon-o-cube', 'before')
-                ->color('success') // vert
-                ->url(route('filament.' . auth()->user()->role . '.resources.equipements.index'))
-                ->chart([5, 6, 7, 8, 9, 10]),
+            Stat::make('Total des pannes', $totalPannes)
+                ->description('Historique complet')
+                ->descriptionIcon('heroicon-o-exclamation-triangle')
+                ->color('danger'),
 
-            Stat::make('Équipements hors service', $hors_services)
-                ->description('Équipements hors service')
-                ->descriptionIcon('heroicon-o-exclamation-triangle', 'before')
-                ->color('danger') // rouge
-                ->url(route('filament.' . auth()->user()->role . '.resources.equipements.index'))
-                ->chart([3, 4, 5, 6, 7, 8]),
+            Stat::make('Moyenne temps d\'arrêt', $tempsArretFormatted)
+                ->description('Par incident')
+                ->descriptionIcon('heroicon-o-clock')
+                ->color('warning'),
 
-            Stat::make('Équipements fonctionnels', $bons)
-                ->description('Équipements en bon état')
-                ->descriptionIcon('heroicon-o-check-circle', 'before')
-                ->color('warning') // jaune/orange pour "acceptable"
-                ->url(route('filament.' . auth()->user()->role . '.resources.equipements.index'))
-                ->chart([1, 2, 3, 4, 5, 6]),
-            // pieces
-            Stat::make('Équipements en pièces', $pieces)
-                ->description('Pièces enregistrées')
-                ->descriptionIcon('heroicon-o-wrench-screwdriver', 'before')
-                ->color('secondary') // gris
-                ->url(route('filament.' . auth()->user()->role . '.resources.pieces.index'))
-                ->chart([1, 2, 3, 4, 5, 6]),
+            Stat::make('Temps d\'arrêt total', $totalTempsArretFormatted)
+                ->description('Temps cumulé')
+                ->descriptionIcon('heroicon-o-clock')
+                ->color('danger'),
+
+            Stat::make('Pannes cette année', $pannesCetteAnnee)
+                ->description(now()->year)
+                ->descriptionIcon('heroicon-o-calendar')
+                ->color('warning'),
+
+            Stat::make('MTBF', $mtbfFormatted)
+                ->description('Temps moyen entre pannes')
+                ->descriptionIcon('heroicon-o-arrow-path')
+                ->color('success'),
+
+            Stat::make('Tickets ouverts', $ticketsOuverts)
+                ->description('En cours')
+                ->descriptionIcon('heroicon-o-inbox')
+                ->color($ticketsOuverts > 0 ? 'danger' : 'success'),
         ];
+    }
+
+    protected function calculateMTBF(): ?string
+    {
+        $tickets = $this->equipement->mainteanceCorrectives()
+            ->orderBy('created_at')
+            ->get();
+
+        if ($tickets->count() < 2) {
+            return null;
+        }
+
+        $firstDate = $tickets->first()->created_at;
+        $lastDate = $tickets->last()->created_at;
+
+        $totalDays = $firstDate->diffInDays($lastDate);
+        $numberOfIntervals = $tickets->count() - 1;
+
+        $mtbf = $totalDays / $numberOfIntervals;
+
+        return number_format($mtbf, 1);
     }
 
     public static function canView(): bool
     {
-        return true; // Adjust this based on your authorization logic
+        return true;
     }
 }
