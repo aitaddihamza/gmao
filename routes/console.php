@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -20,7 +21,6 @@ Artisan::command('inspire', function () {
 //     $equipement->update(['etat' => 'hello world']);
 // })->everyMinute(); // Changez la fréquence selon vos besoins
 
-
-Schedule::job(new \App\Jobs\UpdateEquipementStatus())->daily();
-
-
+if (Schema::hasTable('equipements')) {
+    Schedule::job(new \App\Jobs\UpdateEquipementStatus())->daily();
+}
