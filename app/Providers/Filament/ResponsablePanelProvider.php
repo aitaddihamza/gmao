@@ -29,6 +29,7 @@ class ResponsablePanelProvider extends PanelProvider
             ->id('responsable')
             ->path('responsable')
             ->brandLogo(asset('favicon.svg'))
+            ->profile()
             ->brandLogoHeight('3rem')
             ->databaseNotifications()
             ->databaseNotificationsPolling('1s')

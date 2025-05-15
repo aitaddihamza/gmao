@@ -27,6 +27,7 @@ class EngineerPanelProvider extends PanelProvider
             ->id('engineer')
             ->path('engineer')
             ->brandLogo(asset('favicon.svg'))
+            ->profile()
             ->brandLogoHeight('3rem')
             ->colors([
                 'primary' => Color::Blue

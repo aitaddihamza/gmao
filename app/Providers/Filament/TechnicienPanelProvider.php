@@ -28,6 +28,7 @@ class TechnicienPanelProvider extends PanelProvider
             ->path('technicien')
             ->brandLogo(asset('favicon.svg'))
             ->brandLogoHeight('3rem')
+            ->profile()
             ->plugins([FilamentFullCalendarPlugin::make()
                 ->schedulerLicenseKey('')
                 ->selectable()
