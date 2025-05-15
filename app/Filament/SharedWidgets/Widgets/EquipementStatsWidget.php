@@ -38,6 +38,14 @@ class EquipementStatsWidget extends BaseWidget
         $mtbf = $this->calculateMTBF();
         $mtbfFormatted = $mtbf ? $mtbf . ' jours' : 'N/A';
 
+        // temps moyen de réparation (MTTR - Mean Time To Repair)
+        $mttrFormatted = $this->calculerMTTR();
+        $mttrFormatted = $mttrFormatted ? $mttrFormatted . ' h' : 'N/A';
+
+
+        // MTTR Temps moyen de réparation
+        $mttr = $this->calculerMTTR();
+
         // Tickets ouverts
         $ticketsOuverts = $this->equipement->tickets()
             ->where('statut', '!=', 'cloture')
@@ -59,10 +67,10 @@ class EquipementStatsWidget extends BaseWidget
                 ->descriptionIcon('heroicon-o-clock')
                 ->color('danger'),
 
-            Stat::make('Pannes cette année', $pannesCetteAnnee)
-                ->description(now()->year)
-                ->descriptionIcon('heroicon-o-calendar')
-                ->color('warning'),
+            Stat::make('MTTR', $mttrFormatted)
+                ->description('Temps moyen de réparation')
+                ->descriptionIcon('heroicon-o-arrow-path')
+                ->color('success'),
 
             Stat::make('MTBF', $mtbfFormatted)
                 ->description('Temps moyen entre pannes')
@@ -101,4 +109,26 @@ class EquipementStatsWidget extends BaseWidget
     {
         return true;
     }
+
+    protected function calculerMTTR(): ?string
+    {
+        $tickets = $this->equipement->mainteanceCorrectives()
+                                    ->get();
+
+        if ($tickets->count() < 2) {
+            return null;
+        }
+
+        // temps d'arrêt total
+        $totalTempsArret = $tickets->sum('temps_arret');
+        // nombre de pannes
+        $nombreDePannes = $tickets->count();
+
+        // MTTR = temps d'arrêt total / nombre de pannes
+
+        $mttr = $totalTempsArret / $nombreDePannes;
+        return number_format($mttr, 1);
+
+    }
+
 }
