@@ -42,7 +42,7 @@ class ChatWitAi extends Command
         $response  = Prism::text()
             ->using(Provider::OpenAI, 'google/gemma-3-12b-it')
             // ->withSystemPrompt('vous êtess un expert en laravel 11.x')
-            ->withPrompt("que ce que json ?")
+            ->withPrompt("que ce que le CNN? ")
             ->asText();
         dd($response->text);
     }

@@ -29,6 +29,7 @@ class EditMaintenancePreventive extends EditRecord
         $record = $this->getRecord();
         $record->load('pieces'); // Load associated pieces
 
+
         // Store the original state in the class property
         $this->originalPiecesState = collect($record->pieces->map(function ($piece) {
             return [
@@ -128,4 +129,25 @@ class EditMaintenancePreventive extends EditRecord
         }
 
     }
+
+
+    protected function piecesChanged($record): bool
+    {
+        $inputPieces = $this->pieces;
+        $oldPieces = $record->pieces;
+        // check the count first
+        if (count($inputPieces) != $oldPieces->count()) {
+            return true;
+        }
+        $oldPieces->each(function ($piece) use ($inputPieces) {
+            $inputPiece = collect($inputPieces)->where('piece_id', $piece->id)->first();
+            if ($inputPiece && $inputPiece['quantite_utilisee'] != $piece->pivot->quantite_utilisee) {
+                return true;
+            }
+        });
+
+        return false;
+
+    }
+
 }

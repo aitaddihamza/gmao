@@ -60,10 +60,12 @@ class CreateTicket extends CreateRecord
         }
 
         // change l'état de l'équipement
-        if ($ticket->type_ticket == "correctif" && $ticket->date_resolution && $ticket->date_intervention) {
-            // le temps arret = $date_resolution - date d'intervention
-            $temps_arret = $ticket->date_resolution->diffInHours($ticket->date_intervention);
-            $ticket->temps_arret = $temps_arret;
+        if ($ticket->type_ticket == "correctif") {
+            if ($ticket->date_intervention && $ticket->date_resolution) {
+                $temps_arret = $ticket->date_intervention->diffInHours($ticket->date_resolution);
+                $temps_arret = abs($temps_arret);
+                $ticket->update(['temps_arret' => $temps_arret]);
+            }
             $equipement = $ticket->equipement;
             $equipement->update(['etat' => 'hors_service']);
             // dd($equipement);

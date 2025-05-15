@@ -36,10 +36,24 @@ class EditTicket extends EditRecord
         return $data;
     }
 
+    protected function equipementChanged($record): bool
+    {
+        $equipement = $record->equipement;
+        $oldState = $equipement->etat;
+        $newState = $this->data['equipement_etat'] ?? null;
+        if ($oldState != $newState) {
+            return true;
+        }
+        return false;
+    }
     protected function afterSave(): void
     {
         $ticket = $this->getRecord();
 
+        // check for changes
+        if (!$ticket->wasChanged() && !$this->piecesChanged($ticket) && !$this->equipementChanged($ticket)) {
+            return;
+        }
         // Notify the assigned user
         if ($ticket->user_assignee_id) {
             $assignee = User::find($ticket->user_assignee_id);
@@ -133,8 +147,14 @@ class EditTicket extends EditRecord
 
         if ($ticket->type_ticket == "correctif") {
             // le temps arret = $date_resolution - date d'intervention
-            $temps_arret = $ticket->date_resolution->diffInHours($ticket->date_intervention);
-            $ticket->update(['temps_arret' => $temps_arret]);
+            if ($ticket->date_intervention && $ticket->date_resolution) {
+                $temps_arret = $ticket->date_intervention->diffInHours($ticket->date_resolution);
+                $temps_arret = abs($temps_arret);
+                $ticket->update(['temps_arret' => $temps_arret]);
+                // mettre à jour l'état de l'équipement
+            } else {
+                $equipement->update(['etat' => 'hors_service']);
+            }
             // notifier tous les utilisateurs n'import qeul role par ce panne de ce équipement
             foreach (User::all() as $user) {
                 if ($user->role == 'admin' || $user->id == auth()->user()->id || $ticket->user_assignee_id == $user->id) {
@@ -171,6 +191,27 @@ class EditTicket extends EditRecord
                 ->send();
         }
     }
+
+    // function that returns true if there are changes in pieces
+    protected function piecesChanged($record): bool
+    {
+        $inputPieces = $this->pieces;
+        $oldPieces = $record->pieces;
+        // check the count first
+        if (count($inputPieces) != $oldPieces->count()) {
+            return true;
+        }
+        $oldPieces->each(function ($piece) use ($inputPieces) {
+            $inputPiece = collect($inputPieces)->where('piece_id', $piece->id)->first();
+            if ($inputPiece && $inputPiece['quantite_utilisee'] != $piece->pivot->quantite_utilisee) {
+                return true;
+            }
+        });
+
+        return false;
+
+    }
+
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
