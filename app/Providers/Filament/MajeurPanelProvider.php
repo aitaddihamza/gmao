@@ -29,7 +29,6 @@ class MajeurPanelProvider extends PanelProvider
             ->path('majeur')
             ->databaseNotifications()
             ->brandName('GMAO')
-            ->prfoile()
             ->profile()
             ->plugins([FilamentFullCalendarPlugin::make()
                     ->selectable()
