@@ -34,7 +34,7 @@ class DirecteurPanelProvider extends PanelProvider
                     ->editable()
             ])
             ->databaseNotifications()
-            ->databaseNotificationsPolling('1s')
+            ->databaseNotificationsPolling('2s')
             ->colors([
                 'primary' => Color::Amber,
             ])

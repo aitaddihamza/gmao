@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Filament\SharedResources\TypeBloc;
-    
+
 use App\Filament\SharedResources\TypeBloc\TypeBlocResource\Pages;
 use App\Models\TypeBloc;
 use Filament\Forms;
@@ -17,8 +17,12 @@ class TypeBlocResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-tag';
     protected static ?string $navigationGroup = 'Gestion des blocs';
     protected static ?int $navigationSort = 3;
-    protected static ?string $navigationLabel = 'Types de blocs';
+    protected static ?string $navigationLabel = 'Types de services';
     protected static ?string $slug = 'types-blocs';
+
+    protected static ?string $pluralLabel = 'Type de Services';
+
+    protected static ?string $modelLabel = 'type de service';
 
     public static function form(Form $form): Form
     {
@@ -41,7 +45,7 @@ class TypeBlocResource extends Resource
 
                 Tables\Columns\TextColumn::make('blocs_count')
                     ->counts('blocs')
-                    ->label('Nombre de blocs'),
+                    ->label('Nombre de services'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Date de création')
@@ -80,4 +84,3 @@ class TypeBlocResource extends Resource
         ];
     }
 }
-

@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Schedule;
 use App\Models\Equipement;
 use App\Jobs\UpdateEquipementStatus;
 
-
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
@@ -20,7 +19,5 @@ Artisan::command('inspire', function () {
 //     $equipement->update(['etat' => 'hello world']);
 // })->everyMinute(); // Changez la fréquence selon vos besoins
 
-
-Schedule::job(new \App\Jobs\UpdateEquipementStatus())->daily();
-
-
+//
+// Schedule::job(new \App\Jobs\UpdateEquipementStatus())->daily();

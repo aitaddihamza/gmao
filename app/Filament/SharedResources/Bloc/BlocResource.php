@@ -20,13 +20,17 @@ class BlocResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
     protected static ?string $navigationGroup = 'Gestion des blocs';
     protected static ?int $navigationSort = 1;
-    protected static ?string $navigationLabel = 'Blocs';
+    protected static ?string $navigationLabel = 'services';
     protected static ?string $slug = 'blocs';
+    protected static ?string $pluralLabel = 'Seicrves';
+
+    protected static ?string $modelLabel = 'service';
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             Forms\Components\TextInput::make('nom_bloc')
+                ->label('Nom du service')
                 ->required()
                 ->maxLength(255),
 
@@ -35,7 +39,7 @@ class BlocResource extends Resource
                 ->required()
                 ->searchable()
                 ->preload()
-                ->label('Type de bloc'),
+                ->label('type de service'),
 
             Forms\Components\Textarea::make('description')
                 ->required()
@@ -53,12 +57,13 @@ class BlocResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('nom_bloc')
+                    ->label('Nom de service')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('typeBloc.nom')
                     ->sortable()
                     ->searchable()
-                    ->label('Type de bloc'),
+                    ->label('Type de service'),
 
                 Tables\Columns\TextColumn::make('description')
                     ->searchable(),

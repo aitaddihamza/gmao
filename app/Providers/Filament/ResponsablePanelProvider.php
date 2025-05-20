@@ -32,7 +32,7 @@ class ResponsablePanelProvider extends PanelProvider
             ->profile()
             ->brandLogoHeight('3rem')
             ->databaseNotifications()
-            ->databaseNotificationsPolling('1s')
+            ->databaseNotificationsPolling('2s')
             ->plugins([FilamentFullCalendarPlugin::make()
                     ->selectable()
                     ->editable()

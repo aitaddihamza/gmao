@@ -24,6 +24,12 @@ class TicketResource extends Resource
 {
     protected static ?string $model = Ticket::class;
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
+    # changer le titre vers Intervention
+    protected static ?string $navigationLabel = 'Interventions';
+
+    protected static ?string $pluralLabel = 'Interventions';
+
+    protected static ?string $modelLabel = 'Intervention';
 
     public static function form(Form $form): Form
     {
@@ -40,6 +46,7 @@ class TicketResource extends Resource
                             ->label('Équipement concerné'),
 
                         Forms\Components\Select::make('type_ticket')
+                            ->label('Intervention')
                             ->options([
                                 'correctif' => 'Maintenance corrective',
                                 'installation' => 'Installation',
@@ -395,7 +402,7 @@ class TicketResource extends Resource
 
                 // type de ticket
                 Tables\Columns\TextColumn::make('type_ticket')
-                    ->label('Type de ticket')
+                    ->label('Type d\'intervention ')
                     ->sortable()
                     ->searchable(),
             ])

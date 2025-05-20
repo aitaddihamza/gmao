@@ -40,7 +40,7 @@ class TechnicienPanelProvider extends PanelProvider
                 'primary' => Color::Yellow,
             ])
             ->databaseNotifications()
-            ->databaseNotificationsPolling('1s')
+            ->databaseNotificationsPolling('2s')
             ->discoverResources(in: app_path('Filament/SharedResources/Piece'), for: 'App\\Filament\\SharedResources\\Piece')
             ->discoverResources(in: app_path('Filament/SharedResources/Equipement'), for: 'App\\Filament\\SharedResources\\Equipement')
             ->discoverResources(in: app_path('Filament/Technicien/Resources'), for: 'App\\Filament\\Technicien\\Resources')
