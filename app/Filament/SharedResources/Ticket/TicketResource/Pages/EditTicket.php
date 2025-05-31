@@ -180,7 +180,10 @@ class EditTicket extends EditRecord
 
         if ($ticket->type_ticket == "correctif") {
             // le temps arret = $date_resolution - date d'intervention
-            if ($ticket->date_intervention && $ticket->date_resolution) {
+            if (
+                isset($ticket->date_intervention) &&
+                isset($ticket->date_resolution)
+            ) {
                 $temps_arret = $ticket->date_intervention->diffInHours(
                     $ticket->date_resolution
                 );
@@ -189,35 +192,35 @@ class EditTicket extends EditRecord
                 // mettre à jour l'état de l'équipement
             } else {
                 $equipement->update(["etat" => "hors_service"]);
-            }
-            // notifier tous les utilisateurs n'import qeul role par ce panne de ce équipement
-            foreach (User::all() as $user) {
-                if (
-                    $user->role == "admin" ||
-                    $user->id == auth()->user()->id ||
-                    $ticket->user_assignee_id == $user->id
-                ) {
-                    continue;
-                }
-                Notification::make()
-                    ->title("Équipement Hors Service")
-                    ->body(
-                        "L'équipement {$equipement->designation} est hors service."
-                    )
-                    ->success()
-                    ->actions([
-                        Action::make('Voir l\'Équipement')
-                            ->url(
-                                route(
-                                    "filament." .
-                                        $user->role .
-                                        ".resources.equipements.view",
-                                    $equipement->id
+                // notifier tous les utilisateurs n'import qeul role par ce panne de ce équipement
+                foreach (User::all() as $user) {
+                    if (
+                        $user->role == "admin" ||
+                        $ticket->createur()->id == $user->id ||
+                        $ticket->user_assignee_id == $user->id
+                    ) {
+                        continue;
+                    }
+                    Notification::make()
+                        ->title("Équipement Hors Service")
+                        ->body(
+                            "L'équipement {$equipement->designation} est hors service."
+                        )
+                        ->success()
+                        ->actions([
+                            Action::make('Voir l\'Équipement')
+                                ->url(
+                                    route(
+                                        "filament." .
+                                            $user->role .
+                                            ".resources.equipements.view",
+                                        $equipement->id
+                                    )
                                 )
-                            )
-                            ->icon("heroicon-o-eye"),
-                    ])
-                    ->sendToDatabase($user);
+                                ->icon("heroicon-o-eye"),
+                        ])
+                        ->sendToDatabase($user);
+                }
             }
         }
 
