@@ -13,9 +13,9 @@ class Dashboard extends BaseDashboard
 
     protected static string $view = 'filament.shared.pages.dashboard';
 
-    protected static ?string $navigationLabel = 'Stats';
+    protected static ?string $navigationLabel = 'Tableau de board';
     // cange the tilte
-    protected static ?string $title = 'Stats';
+    protected static ?string $title = 'Tableau de board';
 
     protected function getHeaderWidgets(): array
     {

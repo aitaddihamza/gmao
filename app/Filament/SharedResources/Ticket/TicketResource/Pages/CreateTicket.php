@@ -20,17 +20,22 @@ class CreateTicket extends CreateRecord
         if ($ticket->user_assignee_id) {
             $assignee = User::find($ticket->user_assignee_id);
             $userRole = $assignee->role;
-            $url = route("filament.".$userRole.".resources.tickets.show", $ticket->id);
+            $url = route(
+                "filament." . $userRole . ".resources.tickets.show",
+                $ticket->id
+            );
 
             if ($assignee) {
                 Notification::make()
-                    ->title('Ticket Assigné')
-                    ->body("Vous avez été assigné au ticket ID: {$ticket->id} pour l'équipement {$ticket->equipement->designation}.")
+                    ->title("Intervention Assigné")
+                    ->body(
+                        "Vous avez été assigné à l'intervention ID: {$ticket->id} pour l'équipement {$ticket->equipement->designation}."
+                    )
                     ->success()
                     ->actions([
-                        Action::make('Voir le Ticket')
+                        Action::make("Voir le Ticket")
                             ->url($url)
-                            ->icon('heroicon-o-eye'),
+                            ->icon("heroicon-o-eye"),
                     ])
                     ->sendToDatabase($assignee);
             }
@@ -41,10 +46,13 @@ class CreateTicket extends CreateRecord
             // Préparer les données des pièces pour la synchronisation
             $pieceData = [];
             foreach ($this->pieces as $piece) {
-                if (!empty($piece['piece_id']) && isset($piece['quantite_utilisee'])) {
-                    $pieceId = $piece['piece_id'];
-                    $quantite = $piece['quantite_utilisee'];
-                    $pieceData[$pieceId] = ['quantite_utilisee' => $quantite];
+                if (
+                    !empty($piece["piece_id"]) &&
+                    isset($piece["quantite_utilisee"])
+                ) {
+                    $pieceId = $piece["piece_id"];
+                    $quantite = $piece["quantite_utilisee"];
+                    $pieceData[$pieceId] = ["quantite_utilisee" => $quantite];
 
                     // Mettre à jour le stock de la pièce
                     $pieceObj = Piece::find($pieceId);
@@ -61,33 +69,49 @@ class CreateTicket extends CreateRecord
 
         // change l'état de l'équipement
         if ($ticket->type_ticket == "correctif") {
-            if ($ticket->date_intervention && $ticket->date_resolution) {
-                $temps_arret = $ticket->date_intervention->diffInHours($ticket->date_resolution);
-                $temps_arret = abs($temps_arret);
-                $ticket->update(['temps_arret' => $temps_arret]);
-            }
             $equipement = $ticket->equipement;
-            $equipement->update(['etat' => 'hors_service']);
+            if ($ticket->date_intervention && $ticket->date_resolution) {
+                $temps_arret = $ticket->date_intervention->diffInHours(
+                    $ticket->date_resolution
+                );
+                $temps_arret = abs($temps_arret);
+                $ticket->update(["temps_arret" => $temps_arret]);
+            } else {
+                $equipement->update(["etat" => "hors_service"]);
+            }
             // dd($equipement);
             foreach (User::all() as $user) {
-                if ($user->role == 'admin' || $user->id == auth()->user()->id || $ticket->user_assignee_id == $user->id) {
+                if (
+                    $user->role == "admin" ||
+                    $user->id == auth()->id() ||
+                    $ticket->user_assignee_id == $user->id
+                ) {
                     continue;
                 }
                 Notification::make()
-                    ->title('Équipement Hors Service')
-                    ->body("L'équipement {$equipement->designation} est hors service.")
+                    ->title("Équipement Hors Service")
+                    ->body(
+                        "L'équipement {$equipement->designation} est hors service."
+                    )
                     ->success()
                     ->actions([
                         Action::make('Voir l\'Équipement')
-                            ->url(route('filament.' . $user->role . '.resources.equipements.view', $equipement->id))
-                            ->icon('heroicon-o-eye'),
+                            ->url(
+                                route(
+                                    "filament." .
+                                        $user->role .
+                                        ".resources.equipements.view",
+                                    $equipement->id
+                                )
+                            )
+                            ->icon("heroicon-o-eye"),
                     ])
                     ->sendToDatabase($user);
             }
         }
 
         // Automatically generate the report if the type is 'auto'
-        if ($ticket->rapport_type === 'auto') {
+        if ($ticket->rapport_type === "auto") {
             $reportService = new \App\Services\ReportService();
             $path = $reportService->generateTicketReport(
                 $ticket,
@@ -96,13 +120,12 @@ class CreateTicket extends CreateRecord
                 $ticket->assignee
             );
 
-            $ticket->update(['rapport_path' => $path]);
+            $ticket->update(["rapport_path" => $path]);
 
             \Filament\Notifications\Notification::make()
-                ->title('Rapport généré automatiquement')
+                ->title("Rapport généré automatiquement")
                 ->success()
                 ->send();
         }
     }
-
 }
